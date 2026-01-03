@@ -14,6 +14,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.UTETrainingPointsSystem"
         android:usesCleartextTraffic="true">
+
+        <activity
+            android:name=".ui.event.EventCreateActivity"
+            android:exported="false" />
+
+        <activity android:name=".ui.event.AdminEventListActivity" android:exported="false"/>
+        <activity android:name=".ui.event.EventDetailActivity" android:exported="false"/>
+        <activity android:name=".ui.event.EventEditActivity" android:exported="false"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true">

@@ -22,14 +22,22 @@ public class EventAdapter extends ListAdapter<EventDTO, EventAdapter.VH> {
     private static final DiffUtil.ItemCallback<EventDTO> DIFF = new DiffUtil.ItemCallback<EventDTO>() {
         @Override
         public boolean areItemsTheSame(@NonNull EventDTO oldItem, @NonNull EventDTO newItem) {
-            return oldItem.getId() == newItem.getId();
+            Long oid = oldItem.id;
+            Long nid = newItem.id;
+            if (oid == null || nid == null) return false;
+            return oid.equals(nid);
         }
 
         @Override
         public boolean areContentsTheSame(@NonNull EventDTO oldItem, @NonNull EventDTO newItem) {
-            String ot = oldItem.getTitle() == null ? "" : oldItem.getTitle();
-            String nt = newItem.getTitle() == null ? "" : newItem.getTitle();
-            return ot.equals(nt);
+            String ot = (oldItem.title == null) ? "" : oldItem.title;
+            String nt = (newItem.title == null) ? "" : newItem.title;
+
+            // nếu muốn chặt hơn thì so thêm status/startTime/endTime...
+            String os = (oldItem.status == null) ? "" : oldItem.status;
+            String ns = (newItem.status == null) ? "" : newItem.status;
+
+            return ot.equals(nt) && os.equals(ns);
         }
     };
 
@@ -43,11 +51,12 @@ public class EventAdapter extends ListAdapter<EventDTO, EventAdapter.VH> {
     @Override
     public void onBindViewHolder(@NonNull VH holder, int position) {
         EventDTO e = getItem(position);
-        holder.txtTitle.setText(e.getTitle());
+        holder.txtTitle.setText(e.title != null ? e.title : "");
     }
 
     static class VH extends RecyclerView.ViewHolder {
         TextView txtTitle;
+
         VH(@NonNull View itemView) {
             super(itemView);
             txtTitle = itemView.findViewById(R.id.txtTitle);
