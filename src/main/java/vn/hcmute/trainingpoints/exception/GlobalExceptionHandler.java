@@ -1,5 +1,6 @@
 package vn.hcmute.trainingpoints.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,76 +9,61 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private Map<String, Object> body(HttpStatus status, String message, HttpServletRequest req) {
+        return Map.of(
+                "timestamp", LocalDateTime.now().toString(),
+                "path", req.getRequestURI(),
+                "status", status.value(),
+                "error", status.getReasonPhrase(),
+                "message", message
+        );
+    }
+
     @ExceptionHandler(PointsAlreadyAwardedException.class)
-    public ResponseEntity<?> handlePointsAlreadyAwarded(PointsAlreadyAwardedException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
-                "status", 409,
-                "error", "Conflict",
-                "message", ex.getMessage()
-        ));
+    public ResponseEntity<?> handlePointsAlreadyAwarded(PointsAlreadyAwardedException ex, HttpServletRequest req) {
+        HttpStatus st = HttpStatus.CONFLICT;
+        return ResponseEntity.status(st).body(body(st, ex.getMessage(), req));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<?> handleDataIntegrity(DataIntegrityViolationException ex) {
+    public ResponseEntity<?> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest req) {
         String msg = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
+
         if (msg != null && msg.contains("uq_point_tx_student_semester_event")) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
-                    "status", 409,
-                    "error", "Conflict",
-                    "message", "Points already awarded for this event"
-            ));
+            HttpStatus st = HttpStatus.CONFLICT;
+            return ResponseEntity.status(st).body(body(st, "Points already awarded for this event", req));
         }
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                "status", 400,
-                "error", "Bad Request",
-                "message", "Data integrity violation"
-        ));
+        HttpStatus st = HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(st).body(body(st, "Data integrity violation", req));
     }
 
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<?> handleResponseStatus(ResponseStatusException ex) {
-        return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
-                "status", ex.getStatusCode().value(),
-                "error", ex.getStatusCode().toString(),
-                "message", ex.getReason() == null ? "Request failed" : ex.getReason()
-        ));
+    public ResponseEntity<?> handleResponseStatus(ResponseStatusException ex, HttpServletRequest req) {
+        HttpStatus st = HttpStatus.valueOf(ex.getStatusCode().value());
+        String msg = ex.getReason() == null ? "Request failed" : ex.getReason();
+        return ResponseEntity.status(st).body(body(st, msg, req));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<?> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
         String msg = ex.getBindingResult().getFieldErrors().isEmpty()
                 ? "Validation failed"
                 : ex.getBindingResult().getFieldErrors().get(0).getDefaultMessage();
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                "status", 400,
-                "error", "Bad Request",
-                "message", msg
-        ));
-    }
-
-    // Fallback cho RuntimeException => cho ra 400 thay vì 500 trắng (đúng kiểu em đang test)
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<?> handleRuntime(RuntimeException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                "status", 400,
-                "error", "Bad Request",
-                "message", ex.getMessage()
-        ));
+        HttpStatus st = HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(st).body(body(st, msg, req));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleGeneric(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                "status", 500,
-                "error", "Internal Server Error",
-                "message", ex.getMessage()
-        ));
+    public ResponseEntity<?> handleGeneric(Exception ex, HttpServletRequest req) {
+        HttpStatus st = HttpStatus.INTERNAL_SERVER_ERROR;
+        return ResponseEntity.status(st).body(body(st, ex.getMessage(), req));
     }
 }
