@@ -20,6 +20,7 @@ public class EventRequest {
 
     public Long createdBy;
 
+    public String status;
     public String eventMode;
     public String surveyUrl;
 

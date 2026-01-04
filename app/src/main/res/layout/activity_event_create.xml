@@ -9,83 +9,152 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Thêm sự kiện"
+            android:textStyle="bold"
+            android:textSize="22sp"
+            android:gravity="center"
+            android:layout_marginBottom="12dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tiêu đề"/>
         <EditText
             android:id="@+id/edtTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Title" />
+            android:hint="Nhập tiêu đề"/>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mô tả"
+            android:layout_marginTop="10dp"/>
         <EditText
             android:id="@+id/edtDesc"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Description"
+            android:hint="Nhập mô tả"
             android:minLines="3"
             android:gravity="top"
-            android:inputType="textMultiLine" />
+            android:inputType="textMultiLine"/>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Địa điểm"
+            android:layout_marginTop="10dp"/>
         <EditText
             android:id="@+id/edtLocation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Location" />
+            android:hint="Nhập địa điểm"/>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Banner URL"
+            android:layout_marginTop="10dp"/>
         <EditText
             android:id="@+id/edtBannerUrl"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Banner URL (optional)"
-            android:inputType="textUri" />
+            android:hint="https://... (optional)"
+            android:inputType="textUri"/>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Survey URL"
+            android:layout_marginTop="10dp"/>
+        <EditText
+            android:id="@+id/edtSurveyUrl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="https://... (optional)"
+            android:inputType="textUri"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Loại sự kiện"
+            android:layout_marginTop="10dp"/>
         <Spinner
             android:id="@+id/spCategory"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"/>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Thời gian bắt đầu"
+            android:layout_marginTop="10dp"/>
         <EditText
             android:id="@+id/edtStartTime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Start time (tap)"
+            android:hint="Chạm để chọn"
             android:focusable="false"
-            android:clickable="true" />
+            android:clickable="true"/>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Thời gian kết thúc"
+            android:layout_marginTop="10dp"/>
         <EditText
             android:id="@+id/edtEndTime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="End time (tap)"
+            android:hint="Chạm để chọn"
             android:focusable="false"
-            android:clickable="true" />
+            android:clickable="true"/>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Hạn đăng ký"
+            android:layout_marginTop="10dp"/>
         <EditText
             android:id="@+id/edtDeadline"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Registration deadline (tap)"
+            android:hint="Chạm để chọn"
             android:focusable="false"
-            android:clickable="true" />
+            android:clickable="true"/>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Số lượng tối đa"
+            android:layout_marginTop="10dp"/>
         <EditText
             android:id="@+id/edtMaxParticipants"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Max participants"
-            android:inputType="number" />
+            android:hint="Ví dụ: 300"
+            android:inputType="number"/>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Điểm"
+            android:layout_marginTop="10dp"/>
         <EditText
             android:id="@+id/edtPointValue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Point value"
-            android:inputType="number" />
+            android:hint="Ví dụ: 5"
+            android:inputType="number"/>
 
         <Button
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Create"
-            android:layout_marginTop="12dp" />
-
+            android:layout_marginTop="14dp"/>
     </LinearLayout>
 </ScrollView>
