@@ -28,8 +28,8 @@ public class AuthService {
     private final PasswordResetCodeRepository resetRepo;
     private final OtpMailService otpMailService;
 
-    // ✅ OTP 60 giây (config được)
-    @Value("${app.reset.expireSeconds:60}")
+    // ✅ OTP 120 giây (config được)
+    @Value("${app.reset.expireSeconds:120}")
     private long EXPIRE_SECONDS;
 
     private static final SecureRandom RNG = new SecureRandom();
