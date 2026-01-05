@@ -1,7 +1,10 @@
 package vn.hcmute.trainingpoints.service.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import vn.hcmute.trainingpoints.dto.auth.*;
 import vn.hcmute.trainingpoints.entity.user.PasswordResetCode;
@@ -14,7 +17,6 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.HexFormat;
-import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -24,11 +26,20 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordResetCodeRepository resetRepo;
+    private final OtpMailService otpMailService;
 
-    private static final long EXPIRE_SECONDS = 10 * 60; // 10 phút
+    // ✅ OTP 60 giây (config được)
+    @Value("${app.reset.expireSeconds:60}")
+    private long EXPIRE_SECONDS;
+
     private static final SecureRandom RNG = new SecureRandom();
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public ForgotPasswordResponse requestReset(String email) {
+    /**
+     * Step 1: Request OTP
+     */
+    @Transactional
+    public SimpleMessageResponse requestReset(String email) {
         if (email == null || email.trim().isEmpty()) {
             throw new ResponseStatusException(BAD_REQUEST, "Email is required");
         }
@@ -38,15 +49,10 @@ public class AuthService {
         User user = userRepository.findByEmail(emailNorm)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Email not found"));
 
-        // ✅ Invalidate mã cũ còn hiệu lực (nếu có)
-        resetRepo.findTopByEmailOrderByCreatedAtDesc(user.getEmail()).ifPresent(old -> {
-            if (old.getUsedAt() == null && old.getExpiresAt() != null
-                    && old.getExpiresAt().isAfter(LocalDateTime.now())) {
-                old.setUsedAt(LocalDateTime.now()); // đóng mã cũ
-                resetRepo.save(old);
-            }
-        });
+        // ✅ Xoá toàn bộ OTP chưa dùng của email này (đúng ý em: chỉ giữ used trong DB)
+        resetRepo.deleteAllByEmailAndUsedAtIsNull(user.getEmail());
 
+        // ✅ Tạo OTP 6 số
         String code = random6Digits();
         String codeHash = sha256(code);
 
@@ -59,17 +65,21 @@ public class AuthService {
                 .usedAt(null)
                 .build();
 
-        row = resetRepo.save(row);
+        resetRepo.save(row);
 
-        return ForgotPasswordResponse.builder()
-                .email(user.getEmail())
-                .resetId(row.getId())
-                .expiresInSec(EXPIRE_SECONDS)
-                .demoCode(code) // ✅ DEMO ONLY
+        // ✅ Gửi mail thật
+        otpMailService.sendOtp(user.getEmail(), code, (int) EXPIRE_SECONDS);
+
+        return SimpleMessageResponse.builder()
+                .message("OTP sent")
                 .build();
     }
 
-    public AuthResponse verify(String email, String code) {
+    /**
+     * Step 2: Verify OTP (KHÔNG set used_at)
+     */
+    @Transactional(readOnly = true)
+    public SimpleMessageResponse verify(String email, String code) {
         if (email == null || email.trim().isEmpty()) {
             throw new ResponseStatusException(BAD_REQUEST, "Email is required");
         }
@@ -86,7 +96,7 @@ public class AuthService {
         if (latest.getUsedAt() != null) {
             throw new ResponseStatusException(CONFLICT, "Code already used");
         }
-        if (latest.getExpiresAt().isBefore(LocalDateTime.now())) {
+        if (latest.getExpiresAt() == null || latest.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new ResponseStatusException(BAD_REQUEST, "Code expired");
         }
 
@@ -95,26 +105,58 @@ public class AuthService {
             throw new ResponseStatusException(UNAUTHORIZED, "Invalid code");
         }
 
+        return SimpleMessageResponse.builder()
+                .message("OTP valid")
+                .build();
+    }
+
+    /**
+     * Step 3: Reset password (set used_at = now)
+     */
+    @Transactional
+    public SimpleMessageResponse resetPassword(String email, String code, String newPassword) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new ResponseStatusException(BAD_REQUEST, "Email is required");
+        }
+        if (code == null || code.trim().isEmpty()) {
+            throw new ResponseStatusException(BAD_REQUEST, "Code is required");
+        }
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            throw new ResponseStatusException(BAD_REQUEST, "New password is required");
+        }
+        if (newPassword.length() < 6) {
+            throw new ResponseStatusException(BAD_REQUEST, "Password must be at least 6 characters");
+        }
+
+        User user = userRepository.findByEmail(email.trim())
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Email not found"));
+
+        PasswordResetCode latest = resetRepo.findTopByEmailOrderByCreatedAtDesc(user.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(BAD_REQUEST, "No reset request found"));
+
+        if (latest.getUsedAt() != null) {
+            throw new ResponseStatusException(CONFLICT, "Code already used");
+        }
+        if (latest.getExpiresAt() == null || latest.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(BAD_REQUEST, "Code expired");
+        }
+
+        String inputHash = sha256(code.trim());
+        if (!inputHash.equalsIgnoreCase(latest.getCodeHash())) {
+            throw new ResponseStatusException(UNAUTHORIZED, "Invalid code");
+        }
+
+        // ✅ Update password (đổi field cho đúng entity User của em)
+        // Nếu entity em là user.setPassword(...); thì sửa dòng này:
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        // ✅ Mark OTP used
         latest.setUsedAt(LocalDateTime.now());
         resetRepo.save(latest);
 
-        String fakeToken = "demo-" + UUID.randomUUID(); // ✅ token giả
-
-        AuthUser authUser = AuthUser.builder()
-                .id(user.getId())
-                .studentCode(user.getStudentCode())
-                .fullName(user.getFullName())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .role(user.getRole())
-                .className(user.getClassName())
-                .faculty(user.getFaculty())
-                .status(user.getStatus())
-                .build();
-
-        return AuthResponse.builder()
-                .token(fakeToken)
-                .user(authUser)
+        return SimpleMessageResponse.builder()
+                .message("Password updated")
                 .build();
     }
 
