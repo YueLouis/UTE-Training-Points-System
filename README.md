@@ -1,180 +1,238 @@
-# UTE Training Points System - API
+# UTE Training Points System – Backend API
 
-Backend Spring Boot for Training Points System (Events + Registrations + Points).
-
-## Tech Stack
-- Java 17
-- Spring Boot 3.x
-- Spring Web, Spring Data JPA, Validation
-- MySQL
-- Lombok
-- Swagger/OpenAPI (springdoc)
-
-## Run locally
-### 1) Configure database
-Update `src/main/resources/application.properties` (or `application.yml`):
-
-```
-properties
-spring.datasource.url=jdbc:mysql://localhost:3306/<db_name>?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-spring.datasource.username=<username>
-spring.datasource.password=<password>
-
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-```
-
-### 2) Start server
-```
-bash
-mvn spring-boot:run
-```
-Server runs at:
-```
-http://localhost:8080
-```
-Swagger UI
-```
-http://localhost:8080/swagger-ui/index.html
-http://localhost:8080/v3/api-docs
-```
+Backend REST API cho hệ thống Quản lý hoạt động & điểm rèn luyện sinh viên (UTE).
 
 ---
 
-# Main Flow (Demo)
-## A) Event ATTENDANCE (Offline)
-### 1. Create event 
-```
-status = OPEN
-eventMode = ATTENDANCE
-```
-### 2. Student registers for event
+## 🚀 Tech Stack
 
-### 3. Student check-in
+1. Java 17
 
-### 4. Student check-out
-```
-→ Registration becomes COMPLETED
-→ Training points are awarded
-```
-### 5. Event can auto-close when reaching maxParticipants (if enabled)
+3. Spring Boot 3.x
 
----
+3. Spring Web, Spring Data JPA, Validation
 
-## B) Event ONLINE (Survey)
-### 1. Create event with:
-```
-status = OPEN
-eventMode = ONLINE
-surveyUrl required
-```
+4. MySQL
 
-### 2. Student completes survey
+5. Spring Mail (OTP Email)
 
-### 3. Registration becomes COMPLETED
-```
-→ Training points are awarded
-```
-### 4. Event can auto-close when reaching maxParticipants (if enabled)
+6. Lombok
+
+7. Swagger / OpenAPI
+
+8. Railway (Production Deployment)
 
 ---
 
-# API Endpoints (Core)
-## 1. Event APIs
+## 🏗️ Architecture Overview
 ```
-GET /api/events
+Controller  →  Service  →  Repository  →  MySQL
+                 ↓
+            Business Rules
+```
 
-GET /api/events?studentId={studentId}
+1. RESTful API
 
-GET /api/events/{id}
+2. JPA auto schema update
 
-GET /api/events/by-category/{categoryId}
+3. Environment-based config (local / production)
 
-GET /api/events/by-category/{categoryId}?studentId={studentId}
+4. Standardized error handling
 
-POST /api/events
+---
 
-PUT /api/events/{id}
+## 🗄️ Database (MySQL)
 
-POST /api/events/{id}/close
+Main tables:
 
+1. users
+
+2. events
+
+3. event_registrations
+
+4. event_categories
+
+5. password_reset_codes
+
+6. Security:
+
+Passwords stored as BCrypt hash
+
+OTP stored as SHA-256 hash
+
+OTP has expire time + used_at
+
+---
+
+## 🔐 Authentication – Forgot Password (OTP)
+
+Flow:
+
+1. Request OTP
+
+2. Verify OTP
+
+3. Reset password
+
+```
+POST /api/auth/forgot-password/request
+POST /api/auth/forgot-password/verify
+POST /api/auth/forgot-password/reset
+```
+
+Features:
+
+1. OTP expires (configurable, default 120s)
+
+2. Old OTP auto invalidated
+
+3. Scheduled cleanup removes expired OTP
+
+4. Email sent via Gmail SMTP
+
+---
+
+## 🎯 Core Business Flows
+### A) OFFLINE Event (ATTENDANCE)
+
+1. Create event (OPEN)
+
+2. Student registers
+
+3. Check-in
+
+4. Check-out
+→ Registration COMPLETED
+→ Training points awarded
+
+### B) ONLINE Event (Survey)
+
+1. Create event (OPEN, surveyUrl)
+
+2. Student completes survey
+→ Registration COMPLETED
+→ Training points awarded
+
+---
+
+## 🔌 API Endpoints (Core)
+### 1. Events
+```
+GET    /api/events
+GET    /api/events/{id}
+GET    /api/events/by-category/{categoryId}
+POST   /api/events
+PUT    /api/events/{id}
+POST   /api/events/{id}/close
 DELETE /api/events/{id}
 ```
 
-## 2. Event Registrations
+### 2. Event Registrations
 ```
 POST /api/event-registrations
 
-GET /api/event-registrations/by-student/{studentId}
+GET  /api/event-registrations/by-student/{studentId}
+GET  /api/event-registrations/by-event/{eventId}
 
-GET /api/event-registrations/by-event/{eventId}
+PUT  /api/event-registrations/{id}/cancel
+PUT  /api/event-registrations/{eventId}/checkin/{studentId}
+PUT  /api/event-registrations/{eventId}/checkout/{studentId}
+PUT  /api/event-registrations/{eventId}/complete-survey/{studentId}
+```
 
-PUT /api/event-registrations/{id}/cancel
+### 3. Auth 
+```
+POST /api/auth/forgot-password/request
+POST /api/auth/forgot-password/verify
+POST /api/auth/forgot-password/reset
+```
 
-PUT /api/event-registrations/{eventId}/checkin/{studentId} (ATTENDANCE only)
+### 4. User 
+```
+GET /api/users
+GET /api/users/{id}
+```
 
-PUT /api/event-registrations/{eventId}/checkout/{studentId} (ATTENDANCE only)
+### 5. Points
+```
+GET /api/points/summary/{studentId}
+```
 
-PUT /api/event-registrations/{eventId}/complete-survey/{studentId} (ONLINE only)
+### 6. Event Category
+```
+GET /api/event-categories
+GET /api/event-categories/{id}
 ```
 
 ---
 
-## Notes
-```
-ONLINE events do NOT allow check-in/checkout.
+## ⚠️ Business Rules
 
-ATTENDANCE events use check-in/checkout.
+1. ONLINE events cannot check-in / check-out
 
-Error responses are standardized by GlobalExceptionHandler (400/404/409/500).
-```
+2. ATTENDANCE events must check-in before check-out
 
----
+3. One student → one registration per event
 
-## Business Rules
-```
-ONLINE events do not allow check-in / check-out
+4. Training points awarded once
 
-ATTENDANCE events require check-in before check-out
-
-Training points are awarded once per event
-
-Duplicate registrations are prevented
-
-Events can auto-close when full (if configured)
-```
+5. Event auto-closes when full (if enabled)
 
 ---
 
-## Error Handling
-```
-All errors are standardized via GlobalExceptionHandler:
+### ❗ Error Handling
 
+All errors are standardized:
+```
 400 – Bad Request
-
 404 – Not Found
-
-409 – Conflict (duplicate registration / points already awarded)
-
+409 – Conflict
 500 – Internal Server Error
 ```
 
 ---
 
-Pre-push Checklist
+## 🧪 Run Locally
 ```
-✅ mvn clean test runs successfully
+mvn spring-boot:run
+```
 
-✅ Swagger UI accessible
-
-✅ ATTENDANCE flow tested (register → check-in → check-out)
-
-✅ ONLINE flow tested (complete survey)
-
-✅ .gitignore excludes target/
+Swagger:
+```
+http://localhost:8080/swagger-ui/index.html
 ```
 
 ---
 
-This repository contains Backend API only.
-Frontend (Android / Web) is maintained in a separate repository.
+## ☁️ Production Deployment (Railway)
+
+1. Spring Boot service + MySQL plugin
+
+2. Environment variables:
+
+MYSQLHOST, MYSQLPORT, MYSQLDATABASE
+
+MYSQLUSER, MYSQLPASSWORD
+
+SPRING_PROFILES_ACTIVE=production
+
+Auto deploy on push
+
+Swagger available on production URL
+
+---
+
+## ✅ Pre-push Checklist
+✔ mvn clean test
+✔ Swagger UI accessible
+✔ Attendance flow tested
+✔ Online flow tested
+✔ OTP reset tested
+✔ target/ ignored
+
+---
+
+## 📦 Note
+
+This repository contains Backend API only. Frontend (Android / Web) is maintained separately.
