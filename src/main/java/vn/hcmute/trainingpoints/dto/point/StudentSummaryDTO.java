@@ -10,4 +10,5 @@ public class StudentSummaryDTO {
     private Integer DRL;
     private Integer CTXH;
     private Integer CDDN;
+    private String rankLabel;
 }

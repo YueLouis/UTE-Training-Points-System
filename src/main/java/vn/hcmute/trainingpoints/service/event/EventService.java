@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.data.jpa.domain.Specification;
 import vn.hcmute.trainingpoints.dto.event.EventComputedStatus;
 import vn.hcmute.trainingpoints.dto.event.EventDTO;
 import vn.hcmute.trainingpoints.dto.event.EventRequest;
@@ -16,6 +17,7 @@ import vn.hcmute.trainingpoints.repository.event.EventRepository;
 import vn.hcmute.trainingpoints.repository.registration.EventRegistrationRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -27,6 +29,53 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final EventRegistrationRepository eventRegistrationRepository;
+
+    public List<EventDTO> searchEvents(Long studentId, Long semesterId, Long categoryId, String q) {
+        Specification<Event> spec = (root, query, cb) -> {
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+
+            if (semesterId != null) {
+                predicates.add(cb.equal(root.get("semesterId"), semesterId));
+            }
+            if (categoryId != null) {
+                predicates.add(cb.equal(root.get("categoryId"), categoryId));
+            }
+            if (q != null && !q.isBlank()) {
+                String searchPattern = "%" + q.toLowerCase() + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("title")), searchPattern),
+                        cb.like(cb.lower(root.get("description")), searchPattern)
+                ));
+            }
+
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+
+        List<Event> events = eventRepository.findAll(spec);
+        
+        // Nếu có studentId -> map info đã đăng ký
+        final Map<Long, EventRegistration> regMap;
+        if (studentId != null) {
+            regMap = eventRegistrationRepository.findByStudentId(studentId)
+                    .stream()
+                    .collect(Collectors.toMap(
+                            EventRegistration::getEventId,
+                            Function.identity(),
+                            (a, b) -> (b.getId() != null && a.getId() != null && b.getId() > a.getId()) ? b : a
+                    ));
+        } else {
+            regMap = Map.of();
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        return events.stream()
+                .map(e -> {
+                    EventDTO dto = toDTO(e);
+                    applyFlags(dto, e, regMap.get(e.getId()), now);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
 
     // --------- MAPPING ---------
     private EventDTO toDTO(Event e) {

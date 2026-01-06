@@ -104,8 +104,20 @@ public class PointService {
             throw new RuntimeException("Unknown point type code: " + code);
         }
 
+        summary.setRankLabel(calculateRank(summary.getTotalDrl()));
         summary.setUpdatedAt(LocalDateTime.now());
         studentSemesterSummaryRepository.save(summary);
+    }
+
+    private String calculateRank(Integer drl) {
+        if (drl == null) return "Chưa xếp loại";
+        if (drl >= 90) return "Xuất sắc";
+        if (drl >= 80) return "Tốt";
+        if (drl >= 70) return "Khá";
+        if (drl >= 60) return "Trung bình khá";
+        if (drl >= 50) return "Trung bình";
+        if (drl >= 35) return "Yếu";
+        return "Kém";
     }
 
     private int safe(Integer v) { return v == null ? 0 : v; }
@@ -118,6 +130,7 @@ public class PointService {
                         .studentId(studentId)
                         .semesterId(semesterId)
                         .totalDrl(0).totalCtxh(0).totalCdnn(0)
+                        .rankLabel("Chưa xếp loại")
                         .build()
                 );
 
@@ -127,6 +140,7 @@ public class PointService {
                 .DRL(safe(s.getTotalDrl()))
                 .CTXH(safe(s.getTotalCtxh()))
                 .CDDN(safe(s.getTotalCdnn()))
+                .rankLabel(s.getRankLabel())
                 .build();
     }
 }

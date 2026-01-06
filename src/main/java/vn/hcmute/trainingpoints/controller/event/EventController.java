@@ -20,11 +20,13 @@ public class EventController {
 
     // GET all (option: studentId để FE biết trạng thái đăng ký)
     @GetMapping
-    public List<EventDTO> getAllEvents(@RequestParam(required = false) Long studentId) {
-        if (studentId != null) {
-            return eventService.getAllEventsForStudent(studentId);
-        }
-        return eventService.getAllEvents();
+    public List<EventDTO> getAllEvents(
+            @RequestParam(required = false) Long studentId,
+            @RequestParam(required = false) Long semesterId,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String q
+    ) {
+        return eventService.searchEvents(studentId, semesterId, categoryId, q);
     }
 
     // GET by id
