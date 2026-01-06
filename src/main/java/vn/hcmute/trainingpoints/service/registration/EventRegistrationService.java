@@ -284,6 +284,20 @@ public class EventRegistrationService {
         return toDTO(reg);
     }
 
+    @Transactional
+    public EventRegistrationDTO checkinById(Long registrationId) {
+        EventRegistration reg = eventRegistrationRepository.findById(registrationId)
+                .orElseThrow(() -> new RuntimeException("Registration not found"));
+        return checkin(reg.getEventId(), reg.getStudentId());
+    }
+
+    @Transactional
+    public EventRegistrationDTO checkoutById(Long registrationId) {
+        EventRegistration reg = eventRegistrationRepository.findById(registrationId)
+                .orElseThrow(() -> new RuntimeException("Registration not found"));
+        return checkout(reg.getEventId(), reg.getStudentId());
+    }
+
     private void autoCloseIfFull(Event event) {
         if (event.getMaxParticipants() == null) return;
 

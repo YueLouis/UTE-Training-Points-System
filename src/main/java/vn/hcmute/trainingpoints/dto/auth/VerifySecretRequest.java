@@ -10,5 +10,6 @@ import lombok.Setter;
 public class VerifySecretRequest {
     private String email;
     private String code;
+    private String otp; // alias for code
 }
 

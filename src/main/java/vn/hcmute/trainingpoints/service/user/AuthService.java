@@ -121,12 +121,13 @@ public class AuthService {
      * Step 2: Verify OTP (KHÔNG set used_at)
      */
     @Transactional(readOnly = true)
-    public SimpleMessageResponse verify(String email, String code) {
+    public SimpleMessageResponse verify(String email, String code, String otp) {
+        String finalCode = code != null ? code : otp;
         if (email == null || email.trim().isEmpty()) {
             throw new ResponseStatusException(BAD_REQUEST, "Email is required");
         }
-        if (code == null || code.trim().isEmpty()) {
-            throw new ResponseStatusException(BAD_REQUEST, "Code is required");
+        if (finalCode == null || finalCode.trim().isEmpty()) {
+            throw new ResponseStatusException(BAD_REQUEST, "Code/OTP is required");
         }
 
         User user = userRepository.findByEmail(email.trim())
@@ -142,7 +143,7 @@ public class AuthService {
             throw new ResponseStatusException(BAD_REQUEST, "Code expired");
         }
 
-        String inputHash = sha256(code.trim());
+        String inputHash = sha256(finalCode.trim());
         if (!inputHash.equalsIgnoreCase(latest.getCodeHash())) {
             throw new ResponseStatusException(UNAUTHORIZED, "Invalid code");
         }

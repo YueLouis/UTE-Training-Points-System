@@ -65,6 +65,16 @@ public class EventRegistrationController {
         return ResponseEntity.ok(eventRegistrationService.checkout(eventId, studentId));
     }
 
+    @PutMapping("/{id}/check-in")
+    public ResponseEntity<EventRegistrationDTO> checkinById(@PathVariable Long id) {
+        return ResponseEntity.ok(eventRegistrationService.checkinById(id));
+    }
+
+    @PutMapping("/{id}/check-out")
+    public ResponseEntity<EventRegistrationDTO> checkoutById(@PathVariable Long id) {
+        return ResponseEntity.ok(eventRegistrationService.checkoutById(id));
+    }
+
     // PUT /api/event-registrations/{eventId}/complete-survey/{studentId}
     @PutMapping("/{eventId}/complete-survey/{studentId}")
     public ResponseEntity<EventRegistrationDTO> completeSurvey(

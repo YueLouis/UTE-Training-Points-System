@@ -16,8 +16,11 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAll();
+    public List<User> getAllUsers(
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String q
+    ) {
+        return userService.searchUsers(role, q);
     }
 
     @GetMapping("/{id}")

@@ -25,7 +25,7 @@ public class AuthController {
 
     @PostMapping("/forgot-password/verify")
     public SimpleMessageResponse verify(@RequestBody VerifySecretRequest body) {
-        return authService.verify(body.getEmail(), body.getCode());
+        return authService.verify(body.getEmail(), body.getCode(), body.getOtp());
     }
 
     @PostMapping("/forgot-password/reset")
