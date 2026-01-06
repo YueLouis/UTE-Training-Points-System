@@ -35,6 +35,48 @@ public class AuthService {
     private static final SecureRandom RNG = new SecureRandom();
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    public AuthResponse login(LoginRequest req) {
+        String username = req.getUsername();
+        String password = req.getPassword();
+
+        if (username == null || username.isBlank()) {
+            throw new ResponseStatusException(BAD_REQUEST, "Username is required");
+        }
+        if (password == null || password.isBlank()) {
+            throw new ResponseStatusException(BAD_REQUEST, "Password is required");
+        }
+
+        // Tìm theo email hoặc studentCode
+        User user = userRepository.findByEmail(username)
+                .or(() -> userRepository.findByStudentCode(username))
+                .orElseThrow(() -> new ResponseStatusException(UNAUTHORIZED, "Invalid username or password"));
+
+        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+            throw new ResponseStatusException(UNAUTHORIZED, "Invalid username or password");
+        }
+
+        if (user.getStatus() != null && !user.getStatus()) {
+            throw new ResponseStatusException(FORBIDDEN, "Account is disabled");
+        }
+
+        AuthUser authUser = AuthUser.builder()
+                .id(user.getId())
+                .studentCode(user.getStudentCode())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .role(user.getRole())
+                .className(user.getClassName())
+                .faculty(user.getFaculty())
+                .status(user.getStatus())
+                .build();
+
+        return AuthResponse.builder()
+                .token("MOCK_TOKEN_" + user.getId() + "_" + System.currentTimeMillis())
+                .user(authUser)
+                .build();
+    }
+
     /**
      * Step 1: Request OTP
      */

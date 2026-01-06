@@ -12,6 +12,11 @@ import vn.hcmute.trainingpoints.service.user.AuthService;
 public class AuthController {
 
     private final AuthService authService;
+    
+    @PostMapping("/login")
+    public AuthResponse login(@RequestBody LoginRequest req) {
+        return authService.login(req);
+    }
 
     @PostMapping("/forgot-password/request")
     public SimpleMessageResponse request(@RequestBody ForgotPasswordRequest body) {
