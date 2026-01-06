@@ -10,6 +10,10 @@ package vn.hcmute.utetrainingpointssystem.core;
  */
 public abstract class ResultState<T> {
 
+    public static <T> ResultState<T> loading() { return new Loading<>(); }
+    public static <T> ResultState<T> success(T data) { return new Success<>(data); }
+    public static <T> ResultState<T> error(String message) { return new Error<>(message); }
+
     public static final class Loading<T> extends ResultState<T> { }
 
     public static final class Success<T> extends ResultState<T> {

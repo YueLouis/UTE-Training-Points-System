@@ -1,7 +1,9 @@
 package vn.hcmute.utetrainingpointssystem;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,8 +25,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        EventCategoryApi api = RetrofitClient.getClient().create(EventCategoryApi.class);
+        // ✅ BẮT BUỘC
+        setContentView(R.layout.activity_main);
 
+        Button btnGoEvents = findViewById(R.id.btnGoEvents);
+        btnGoEvents.setOnClickListener(v -> {
+            // TODO: đổi sang activity thật của em
+            // startActivity(new Intent(this, EventsActivity.class));
+            Toast.makeText(this, "Go Events clicked", Toast.LENGTH_SHORT).show();
+        });
+
+        EventCategoryApi api = RetrofitClient.getClient().create(EventCategoryApi.class);
         api.getAll().enqueue(new Callback<List<EventCategoryDTO>>() {
             @Override
             public void onResponse(Call<List<EventCategoryDTO>> call, Response<List<EventCategoryDTO>> response) {
@@ -40,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "OK: categories=" + n, Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "OK categories size=" + n);
 
-                if (n > 0) Log.d(TAG, "First=" + data.get(0).name);
+                if (n > 0 && data.get(0) != null) Log.d(TAG, "First=" + data.get(0).name);
             }
 
             @Override

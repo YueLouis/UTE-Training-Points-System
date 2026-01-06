@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".MyApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -14,15 +15,34 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.UTETrainingPointsSystem"
         android:usesCleartextTraffic="true">
+
+        <activity android:name=".ui.event.EventListActivity" />
+        <activity android:name=".ui.event.EventDetailActivity" />
+        <activity android:name=".ui.event.MyEventsActivity" />
+        <activity android:name=".ui.event.EventCreateActivity" />
+        <activity android:name=".ui.event.EventEditActivity" />
+
+        <activity android:name=".ui.user.ProfileActivity" />
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.user.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".MainActivity" />
+        <activity android:name=".ui.user.ForgotEmailActivity" />
+        <activity android:name=".ui.user.ForgotCodeActivity" />
+        <activity android:name=".ui.user.UserListActivity" />
+        <activity android:name=".ui.admin.AdminDashboardActivity" />
+        <activity android:name=".ui.admin.AttendanceActivity" />
+        <activity android:name=".ui.notification.NotificationActivity" />
+        <activity android:name=".ui.point.PointSummaryActivity" />
+        <activity android:name=".ui.category.CategoryListActivity" />
+        <activity android:name=".ui.registration.EventRegistrationActivity" />
+
     </application>
 
 </manifest>

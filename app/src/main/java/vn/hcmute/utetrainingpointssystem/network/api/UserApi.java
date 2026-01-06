@@ -9,7 +9,7 @@ import vn.hcmute.utetrainingpointssystem.model.user.UserDTO;
 
 public interface UserApi {
     @GET("api/users")
-    Call<List<UserDTO>> getAllUsers();
+    Call<List<UserDTO>> getUsers();
 
     @GET("api/users/{id}")
     Call<UserDTO> getUserById(@Path("id") Long id);

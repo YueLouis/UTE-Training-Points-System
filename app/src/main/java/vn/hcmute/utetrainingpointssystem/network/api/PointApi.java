@@ -7,5 +7,5 @@ import vn.hcmute.utetrainingpointssystem.model.point.StudentSummaryDTO;
 
 public interface PointApi {
     @GET("api/points/summary/{studentId}")
-    Call<StudentSummaryDTO> getSummary(@Path("studentId") Long studentId);
+    Call<StudentSummaryDTO> getSummary(@Path("studentId") long studentId);
 }

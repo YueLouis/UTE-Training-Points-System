@@ -1,6 +1,9 @@
 package vn.hcmute.utetrainingpointssystem.repository.user;
 
+import android.content.Context;
+
 import java.util.List;
+
 import retrofit2.Call;
 import vn.hcmute.utetrainingpointssystem.model.user.UserDTO;
 import vn.hcmute.utetrainingpointssystem.network.RetrofitClient;
@@ -14,7 +17,7 @@ public class UserRepository {
     }
 
     public Call<List<UserDTO>> getAllUsers() {
-        return api.getAllUsers();
+        return api.getUsers();
     }
 
     public Call<UserDTO> getUserById(Long id) {

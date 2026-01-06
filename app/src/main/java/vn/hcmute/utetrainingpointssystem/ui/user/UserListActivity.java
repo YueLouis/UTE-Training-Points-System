@@ -1,4 +1,11 @@
 package vn.hcmute.utetrainingpointssystem.ui.user;
 
-public class UserListActivity {
+import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
+
+public class UserListActivity extends AppCompatActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 }
