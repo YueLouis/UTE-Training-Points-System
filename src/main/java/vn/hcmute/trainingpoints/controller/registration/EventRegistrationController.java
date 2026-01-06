@@ -69,8 +69,9 @@ public class EventRegistrationController {
     @PutMapping("/{eventId}/complete-survey/{studentId}")
     public ResponseEntity<EventRegistrationDTO> completeSurvey(
             @PathVariable Long eventId,
-            @PathVariable Long studentId
+            @PathVariable Long studentId,
+            @RequestParam(required = false) String secretCode
     ) {
-        return ResponseEntity.ok(eventRegistrationService.completeSurvey(eventId, studentId));
+        return ResponseEntity.ok(eventRegistrationService.completeSurvey(eventId, studentId, secretCode));
     }
 }

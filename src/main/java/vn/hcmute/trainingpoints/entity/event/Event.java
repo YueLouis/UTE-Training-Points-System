@@ -67,4 +67,7 @@ public class Event {
 
     @Column(name = "survey_url", length = 500)
     private String surveyUrl;
+
+    @Column(name = "survey_secret_code", length = 50)
+    private String surveySecretCode;
 }

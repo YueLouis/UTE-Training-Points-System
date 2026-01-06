@@ -52,4 +52,5 @@ public class EventDTO {
 
     private EventMode eventMode;
     private String surveyUrl;
+    private String surveySecretCode;
 }

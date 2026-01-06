@@ -8,11 +8,13 @@ import vn.hcmute.trainingpoints.entity.event.Event;
 import vn.hcmute.trainingpoints.entity.point.PointTransaction;
 import vn.hcmute.trainingpoints.entity.point.PointType;
 import vn.hcmute.trainingpoints.entity.point.StudentSemesterSummary;
+import vn.hcmute.trainingpoints.entity.notification.NotificationType;
 import vn.hcmute.trainingpoints.repository.event.EventRepository;
 import vn.hcmute.trainingpoints.repository.point.PointTransactionRepository;
 import vn.hcmute.trainingpoints.repository.point.PointTypeRepository;
 import vn.hcmute.trainingpoints.repository.point.StudentSemesterSummaryRepository;
 import vn.hcmute.trainingpoints.exception.PointsAlreadyAwardedException;
+import vn.hcmute.trainingpoints.service.notification.NotificationService;
 
 import java.time.LocalDateTime;
 
@@ -24,6 +26,7 @@ public class PointService {
     private final StudentSemesterSummaryRepository studentSemesterSummaryRepository;
     private final PointTypeRepository pointTypeRepository;
     private final EventRepository eventRepository;
+    private final NotificationService notificationService;
 
     /**
      * Cộng điểm khi event COMPLETED (đủ checkin + checkout).
@@ -62,6 +65,13 @@ public class PointService {
 
         // update summary
         upsertSummary(studentId, semesterId, pointTypeId, points);
+
+        // create notification
+        PointType pt = pointTypeRepository.findById(pointTypeId).orElse(null);
+        String pointTypeName = pt != null ? pt.getName() : "điểm";
+        String notiTitle = "Bạn đã được cộng " + points + " " + pointTypeName;
+        String notiContent = "Bạn đã hoàn thành sự kiện \"" + event.getTitle() + "\" và được cộng " + points + " " + pointTypeName + ".";
+        notificationService.createNotification(studentId, notiTitle, notiContent, NotificationType.EVENT);
     }
 
     @Transactional

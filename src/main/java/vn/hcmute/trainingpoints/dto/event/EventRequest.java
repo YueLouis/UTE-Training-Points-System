@@ -32,4 +32,5 @@ public class EventRequest {
     // thêm cái này
     private EventMode eventMode;
     private String surveyUrl;
+    private String surveySecretCode;
 }

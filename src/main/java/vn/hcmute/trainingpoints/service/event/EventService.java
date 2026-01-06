@@ -50,6 +50,7 @@ public class EventService {
                 .status(e.getStatus())
                 .eventMode(e.getEventMode())
                 .surveyUrl(e.getSurveyUrl())
+                .surveySecretCode(e.getSurveySecretCode())
                 .build();
     }
 
@@ -72,6 +73,7 @@ public class EventService {
 
         event.setEventMode(req.getEventMode());
         event.setSurveyUrl(req.getSurveyUrl());
+        event.setSurveySecretCode(req.getSurveySecretCode());
     }
 
     // --------- READ ---------

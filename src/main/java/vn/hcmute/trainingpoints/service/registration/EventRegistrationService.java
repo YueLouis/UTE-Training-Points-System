@@ -209,7 +209,7 @@ public class EventRegistrationService {
 
     // 7) ONLINE: hoàn thành khảo sát -> COMPLETED + cộng điểm (KHÔNG bắt buộc register trước)
     @Transactional
-    public EventRegistrationDTO completeSurvey(Long eventId, Long studentId) {
+    public EventRegistrationDTO completeSurvey(Long eventId, Long studentId, String secretCode) {
         Event event = getEventOrThrow(eventId);
 
         if (event.getStatus() == EventStatus.CLOSED) {
@@ -217,6 +217,13 @@ public class EventRegistrationService {
         }
         if (event.getEventMode() != EventMode.ONLINE) {
             throw new RuntimeException("This event is ATTENDANCE. Use check-in/checkout instead.");
+        }
+
+        // Kiểm tra mã bí mật (Nếu Admin có thiết lập)
+        if (event.getSurveySecretCode() != null && !event.getSurveySecretCode().isBlank()) {
+            if (secretCode == null || !event.getSurveySecretCode().equals(secretCode)) {
+                throw new RuntimeException("Invalid survey secret code. Please find the code at the end of the survey.");
+            }
         }
 
         // survey url bắt buộc có
