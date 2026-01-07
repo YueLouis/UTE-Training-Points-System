@@ -204,14 +204,14 @@ public class AuthService {
             throw new ResponseStatusException(UNAUTHORIZED, "Invalid code");
         }
 
-        // ✅ Update password (đổi field cho đúng entity User của em)
-        // Nếu entity em là user.setPassword(...); thì sửa dòng này:
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
-
         // ✅ Check if the new password is the same as the current password
         if (passwordEncoder.matches(newPassword, user.getPasswordHash())) {
             throw new ResponseStatusException(BAD_REQUEST, "New password cannot be the same as the current password");
         }
+
+        // ✅ Update password (đổi field cho đúng entity User của em)
+        // Nếu entity em là user.setPassword(...); thì sửa dòng này:
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
 
         // ✅ Check if the OTP code has been used in the last 1 month
         LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
