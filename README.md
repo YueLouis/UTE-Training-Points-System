@@ -7,7 +7,7 @@ Hệ thống Quản lý Điểm rèn luyện cho sinh viên Trường Đại h�
 - **Framework:** Spring Boot 3.5.x
 - **Cơ sở dữ liệu:** MySQL (Railway)
 - **ORM:** Spring Data JPA / Hibernate
-- **Bảo mật:** BCrypt Password Hashing, Mock Token Authentication
+- **Bảo mật:** BCrypt Password Hashing, Token-based Authentication
 - **Thông báo:** Tự động tạo Notification khi có biến động điểm
 - **Tài liệu API:** Swagger UI / OpenAPI 3.0
 - **Deployment:** Railway.app
@@ -85,6 +85,11 @@ Tự động xếp loại điểm rèn luyện theo quy chế HCMUTE:
 ## 🌍 Deployment (Railway)
 - **Active Profile:** `production`
 - **Biến môi trường:** `SPRING_PROFILES_ACTIVE`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MYSQLHOST`,...
+
+## 🔗 Tham khảo thêm
+- **GitHub Repository:** [UTE Training Points System](https://github.com/YueLouis/UTE-Training-Points-System)
+- **Swagger UI:** [API Documentation](https://ute-training-points-system-production.up.railway.app/swagger-ui/index.html)
+- **Railway Deployment:** [Railway Project](https://railway.com/invite/C8qZFcVV4S6)
 
 ---
 © 2026 UTE Training Points Project Team.
