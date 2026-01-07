@@ -310,7 +310,11 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
+<<<<<<< HEAD
 INSERT INTO `users` VALUES (1,NULL,'Nguyễn Văn Quản Trị','admin@ute.edu.vn','0900000000','admin123','ADMIN',NULL,'Phòng CTSV',1,'2025-12-06 23:33:43','2025-12-06 23:33:43'),(2,'23162102','Nguyễn Trọng Tín','23162102@student.hcmute.edu.vn','0349707863','Tin@1867','STUDENT','23162B','CÔNG NGHỆ THÔNG TIN',1,'2025-12-06 23:46:56','2025-12-07 00:00:31'),(3,'23162005','Trịnh Trâm Anh','23162005@student.hcmute.edu.vn','0767348970','student123','STUDENT','23162B','CÔNG NGHỆ THÔNG TIN',1,'2025-12-07 00:01:48','2025-12-07 00:05:28'),(4,'23162099','Hoàng Văn Vương Thu','23162099@student.hcmute.edu.vn','0348222276','student123','STUDENT','23162B','CÔNG NGHỆ THÔNG TIN',1,'2025-12-07 00:01:48','2025-12-07 00:05:28'),(5,'24162086','Trần Ngọc Nhất','24162086@student.hcmute.edu.vn',NULL,'student123','STUDENT','24162B','CÔNG NGHỆ THÔNG TIN',1,'2025-12-07 00:01:48','2025-12-07 00:05:28');
+=======
+INSERT INTO `users` VALUES (1,NULL,'Nguyễn Quản Trị','admin@hcmute.edu.vn','0900000000','$2a$10$8.UnVuG9HHgffUDAlk8q2OuVGkqCYAdreE8nz9zSrS.H4.rA6P7vG','ADMIN',NULL,'Phòng CTSV',1,'2025-12-06 23:33:43','2026-01-06 09:25:22'),(2,'23162102','Nguyễn Trọng Tín','23162102@student.hcmute.edu.vn','0349707863','$2a$10$ut/XnXjLxhThOqRZlTg5se81yzkHOfKlW4jw2NMsG/eNjlexr3EEa','STUDENT','23162B','CÔNG NGHỆ THÔNG TIN',1,'2025-12-06 23:46:56','2025-12-07 00:00:31'),(3,'23162005','Trịnh Trâm Anh','23162005@student.hcmute.edu.vn','0767348970','$2a$10$76C7pB54nL8V.p6.V0S.te.i3XQ/mN0HlXq/BvF.G6.v5H.h0.o0.','STUDENT','23162B','CÔNG NGHỆ THÔNG TIN',1,'2025-12-07 00:01:48','2025-12-07 00:05:28'),(4,'23162099','Hoàng Văn Vương Thu','23162099@student.hcmute.edu.vn','0348222276','$2a$10$76C7pB54nL8V.p6.V0S.te.i3XQ/mN0HlXq/BvF.G6.v5H.h0.o0.','STUDENT','23162B','CÔNG NGHỆ THÔNG TIN',1,'2025-12-07 00:01:48','2025-12-07 00:05:28'),(5,'24162086','Trần Ngọc Nhất','24162086@student.hcmute.edu.vn',NULL,'$2a$10$76C7pB54nL8V.p6.V0S.te.i3XQ/mN0HlXq/BvF.G6.v5H.h0.o0.','STUDENT','24162B','CÔNG NGHỆ THÔNG TIN',1,'2025-12-07 00:01:48','2025-12-07 00:05:28');
+>>>>>>> 6339fe3 (Push all code to github sub branch)
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

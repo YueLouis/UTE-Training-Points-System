@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_main">
+
+    <!-- Header with Back Button and Title -->
+    <RelativeLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp">
+
+        <!-- Back Button -->
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_back_arrow"
+            android:contentDescription="Back"
+            android:scaleType="centerInside"/>
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tvHeaderTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="QUÊN MẬT KHẨU ?"
+            android:textColor="@color/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold"/>
+
+    </RelativeLayout>
+
+    <!-- Content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/header"
+        android:layout_above="@id/bottomContainer"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingHorizontal="32dp"
+            android:paddingTop="24dp">
+
+            <!-- Title -->
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Xác nhận Mã"
+                android:textColor="@color/text_primary"
+                android:textSize="26sp"
+                android:textStyle="bold"/>
+
+            <!-- Description -->
+            <TextView
+                android:id="@+id/tvDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Hãy điền mã đã được gửi đến email của bạn"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:gravity="center"/>
+
+            <!-- OTP Input Boxes Container -->
+            <LinearLayout
+                android:id="@+id/otpContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <EditText
+                    android:id="@+id/etOtp1"
+                    android:layout_width="48dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/bg_otp_box"
+                    android:gravity="center"
+                    android:inputType="number"
+                    android:maxLength="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:imeOptions="actionNext"/>
+
+                <EditText
+                    android:id="@+id/etOtp2"
+                    android:layout_width="48dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_otp_box"
+                    android:gravity="center"
+                    android:inputType="number"
+                    android:maxLength="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:imeOptions="actionNext"/>
+
+                <EditText
+                    android:id="@+id/etOtp3"
+                    android:layout_width="48dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_otp_box"
+                    android:gravity="center"
+                    android:inputType="number"
+                    android:maxLength="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:imeOptions="actionNext"/>
+
+                <EditText
+                    android:id="@+id/etOtp4"
+                    android:layout_width="48dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_otp_box"
+                    android:gravity="center"
+                    android:inputType="number"
+                    android:maxLength="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:imeOptions="actionNext"/>
+
+                <EditText
+                    android:id="@+id/etOtp5"
+                    android:layout_width="48dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_otp_box"
+                    android:gravity="center"
+                    android:inputType="number"
+                    android:maxLength="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:imeOptions="actionNext"/>
+
+                <EditText
+                    android:id="@+id/etOtp6"
+                    android:layout_width="48dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_otp_box"
+                    android:gravity="center"
+                    android:inputType="number"
+                    android:maxLength="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:imeOptions="actionDone"/>
+
+            </LinearLayout>
+
+            <!-- Resend Code Section -->
+            <TextView
+                android:id="@+id/tvResendLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="Chưa nhận mã ?"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"/>
+
+            <TextView
+                android:id="@+id/btnResend"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Gửi lại mã"
+                android:textColor="@color/text_link"
+                android:textSize="14sp"
+                android:textStyle="normal"
+                android:padding="4dp"
+                android:clickable="true"
+                android:focusable="true"/>
+
+            <!-- Timer Text -->
+            <TextView
+                android:id="@+id/tvTimer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text=""
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:visibility="gone"/>
+
+            <!-- Progress Indicator -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:orientation="vertical"
+                android:gravity="end">
+
+                <TextView
+                    android:id="@+id/tvStep"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1 of 2"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="6dp"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@color/primary_blue"/>
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@color/input_background"/>
+
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Progress Bar -->
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginTop="24dp"
+                android:visibility="gone"
+                android:indeterminateTint="@color/primary_blue"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom Button -->
+    <LinearLayout
+        android:id="@+id/bottomContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        android:paddingHorizontal="32dp"
+        android:paddingBottom="32dp"
+        android:paddingTop="16dp"
+        android:background="@color/background_main">
+
+        <Button
+            android:id="@+id/btnVerify"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/bg_button_gradient"
+            android:text="Xác nhận"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textAllCaps="false"/>
+
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Primary Colors - Blue theme from design -->
+    <color name="primary_blue">#3B82F6</color>
+    <color name="primary_blue_dark">#2563EB</color>
+    <color name="primary_blue_light">#60A5FA</color>
+    
+    <!-- Background Colors -->
+    <color name="background_main">#F8FAFC</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="input_background">#F1F5F9</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#1E293B</color>
+    <color name="text_secondary">#64748B</color>
+    <color name="text_hint">#94A3B8</color>
+    <color name="text_link">#3B82F6</color>
+    
+    <!-- Icon Colors -->
+    <color name="icon_gray">#94A3B8</color>
+    
+    <!-- Gradient Colors for button -->
+    <color name="gradient_start">#60A5FA</color>
+    <color name="gradient_end">#3B82F6</color>
+</resources>
