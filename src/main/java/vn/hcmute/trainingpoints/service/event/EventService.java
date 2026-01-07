@@ -136,6 +136,7 @@ public class EventService {
                 .eventMode(e.getEventMode())
                 .surveyUrl(e.getSurveyUrl())
                 .surveySecretCode(e.getSurveySecretCode())
+                .currentParticipants((int) eventRegistrationRepository.countByEventIdAndStatusNot(e.getId(), EventRegistrationStatus.CANCELLED))
                 .build();
     }
 

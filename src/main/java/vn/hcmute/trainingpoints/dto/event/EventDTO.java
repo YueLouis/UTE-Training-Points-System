@@ -40,7 +40,7 @@ public class EventDTO {
     private Boolean canRegister;
     private Boolean canCheckin;
     private Boolean canCheckout;
-    // private Integer currentParticipants;     // optional
+    private Integer currentParticipants;     // Số người đã đăng ký thực tế
 
     // ---- Student view fields (optional but recommended for FE) ----
     private Boolean registered;              // student đã đăng ký event này chưa
