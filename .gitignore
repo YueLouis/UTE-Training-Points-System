@@ -50,3 +50,10 @@ local.properties
 # IDE
 .idea/
 *.iml
+
+# IDE / local
+.idea/
+_import/
+local.properties
+.gradle/
+**/build/
