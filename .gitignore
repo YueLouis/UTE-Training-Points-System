@@ -31,3 +31,12 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Android/Gradle local
+.gradle/
+local.properties
+**/build/
+
+# IntelliJ/Android Studio
+.idea/
+*.iml
