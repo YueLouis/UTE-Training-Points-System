@@ -206,16 +206,12 @@ public class AuthService {
 
         // ✅ Check if the new password is the same as the current password
         if (passwordEncoder.matches(newPassword, user.getPasswordHash())) {
-            throw new ResponseStatusException(BAD_REQUEST, "Mật khẩu trùng lặp!");
+            throw new ResponseStatusException(BAD_REQUEST, "Mật khẩu trùng lặp");
         }
 
-        // ✅ Update password (đổi field cho đúng entity User của em)
+        // ✅ Update password (ensure it is saved correctly)
         user.setPasswordHash(passwordEncoder.encode(newPassword));
-
-        // ✅ Remove the logic for checking password history
-        // Previously, we checked if the password was used in the last 1 month. This has been removed.
-
-        userRepository.save(user);
+        userRepository.save(user); // Ensure the user entity is saved after updating the password
 
         // ✅ Mark OTP used
         latest.setUsedAt(LocalDateTime.now());
