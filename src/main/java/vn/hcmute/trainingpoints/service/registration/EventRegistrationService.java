@@ -134,6 +134,14 @@ public class EventRegistrationService {
         }
 
         registration = eventRegistrationRepository.save(registration);
+
+        // Log thông tin để debug lỗi đăng ký
+        System.out.println("[DEBUG] Event ID: " + request.getEventId());
+        System.out.println("[DEBUG] Student ID: " + request.getStudentId());
+        System.out.println("[DEBUG] Event Status: " + event.getStatus());
+        System.out.println("[DEBUG] Registration Deadline: " + event.getRegistrationDeadline());
+        System.out.println("[DEBUG] Max Participants: " + event.getMaxParticipants());
+
         return toDTO(registration);
     }
 
@@ -285,7 +293,7 @@ public class EventRegistrationService {
 
         // Kiểm tra mã bí mật (Nếu Admin có thiết lập)
         if (event.getSurveySecretCode() != null && !event.getSurveySecretCode().isBlank()) {
-            if (secretCode == null || !event.getSurveySecretCode().equals(secretCode)) {
+            if (secretCode == null || !secretCode.equals(event.getSurveySecretCode())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã bí mật không đúng. Vui lòng tìm mã ở cuối bài khảo sát.");
             }
         }
