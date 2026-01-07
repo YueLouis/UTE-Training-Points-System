@@ -89,6 +89,12 @@ public class EventService {
         Semester semester = semesterRepository.findById(semesterId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Học kỳ không tồn tại"));
 
+        if (startTime != null && endTime != null) {
+            if (endTime.isBefore(startTime)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thời gian kết thúc phải sau thời gian bắt đầu");
+            }
+        }
+
         if (startTime != null) {
             if (startTime.toLocalDate().isBefore(semester.getStartDate()) || 
                 startTime.toLocalDate().isAfter(semester.getEndDate())) {

@@ -125,7 +125,11 @@ public class EventRegistrationService {
     @Transactional
     public EventRegistrationDTO cancel(Long registrationId) {
         EventRegistration reg = eventRegistrationRepository.findById(registrationId)
-                .orElseThrow(() -> new RuntimeException("Registration not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bản ghi đăng ký"));
+
+        if (reg.getStatus() != EventRegistrationStatus.REGISTERED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ có thể hủy khi ở trạng thái Đã đăng ký");
+        }
 
         reg.setStatus(EventRegistrationStatus.CANCELLED);
         return toDTO(eventRegistrationRepository.save(reg));
@@ -137,10 +141,10 @@ public class EventRegistrationService {
         Event event = getEventOrThrow(eventId);
 
         if (event.getStatus() == EventStatus.CLOSED) {
-            throw new RuntimeException("Event is closed");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sự kiện đã đóng");
         }
         if (event.getEventMode() == EventMode.ONLINE) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This event is ONLINE. Use complete-survey.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đây là sự kiện ONLINE. Vui lòng hoàn thành khảo sát.");
         }
 
         EventRegistration reg = getRegOrNull(eventId, studentId);
@@ -155,7 +159,7 @@ public class EventRegistrationService {
                     .build();
         } else {
             if (reg.getStatus() == EventRegistrationStatus.CANCELLED) {
-                throw new RuntimeException("Registration is cancelled");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đăng ký này đã bị hủy");
             }
             if (reg.getCheckinTime() == null) {
                 reg.setCheckinTime(LocalDateTime.now());
@@ -173,21 +177,21 @@ public class EventRegistrationService {
         Event event = getEventOrThrow(eventId);
 
         if (event.getStatus() == EventStatus.CLOSED) {
-            throw new RuntimeException("Event is closed");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sự kiện đã đóng");
         }
         if (event.getEventMode() == EventMode.ONLINE) {
-            throw new RuntimeException("This event is ONLINE. Use completeSurvey instead of checkout.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đây là sự kiện ONLINE. Dùng completeSurvey thay vì checkout.");
         }
 
         EventRegistration reg = eventRegistrationRepository
                 .findByEventIdAndStudentId(eventId, studentId)
-                .orElseThrow(() -> new RuntimeException("No attendance record. Please check-in first."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy dữ liệu điểm danh. Vui lòng check-in trước."));
 
         if (reg.getStatus() == EventRegistrationStatus.CANCELLED) {
-            throw new RuntimeException("Registration is cancelled");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đăng ký này đã bị hủy");
         }
         if (reg.getCheckinTime() == null) {
-            throw new RuntimeException("Must check-in before checkout");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phải check-in trước khi check-out");
         }
 
         // Idempotent
@@ -213,28 +217,28 @@ public class EventRegistrationService {
         Event event = getEventOrThrow(eventId);
 
         if (event.getStatus() == EventStatus.CLOSED) {
-            throw new RuntimeException("Event is closed");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sự kiện đã đóng");
         }
         if (event.getEventMode() != EventMode.ONLINE) {
-            throw new RuntimeException("This event is ATTENDANCE. Use check-in/checkout instead.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đây là sự kiện OFFLINE. Vui lòng check-in/check-out.");
         }
 
         // Kiểm tra mã bí mật (Nếu Admin có thiết lập)
         if (event.getSurveySecretCode() != null && !event.getSurveySecretCode().isBlank()) {
             if (secretCode == null || !event.getSurveySecretCode().equals(secretCode)) {
-                throw new RuntimeException("Invalid survey secret code. Please find the code at the end of the survey.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã bí mật không đúng. Vui lòng tìm mã ở cuối bài khảo sát.");
             }
         }
 
         // survey url bắt buộc có
         if (event.getSurveyUrl() == null || event.getSurveyUrl().isBlank()) {
-            throw new RuntimeException("Survey URL is missing");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu link khảo sát");
         }
 
         // deadline dùng làm hạn nộp survey
         if (event.getRegistrationDeadline() != null &&
                 LocalDateTime.now().isAfter(event.getRegistrationDeadline())) {
-            throw new RuntimeException("Survey deadline has passed");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đã quá hạn hoàn thành khảo sát");
         }
 
         // slot: nếu đã full thì không cho complete mới
@@ -245,7 +249,7 @@ public class EventRegistrationService {
                 // đóng luôn cho nhất quán
                 event.setStatus(EventStatus.CLOSED);
                 eventRepository.save(event);
-                throw new RuntimeException("Event is full");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sự kiện đã đủ số lượng tham gia");
             }
         }
 
@@ -263,7 +267,7 @@ public class EventRegistrationService {
                     .build();
         } else {
             if (reg.getStatus() == EventRegistrationStatus.CANCELLED) {
-                throw new RuntimeException("Registration is cancelled");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đăng ký này đã bị hủy");
             }
             // Idempotent
             if (reg.getStatus() == EventRegistrationStatus.COMPLETED || reg.getCheckoutTime() != null) {
