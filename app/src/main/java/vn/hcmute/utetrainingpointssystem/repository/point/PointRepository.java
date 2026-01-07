@@ -12,7 +12,7 @@ public class PointRepository {
         api = RetrofitClient.getClient().create(PointApi.class);
     }
 
-    public Call<StudentSummaryDTO> getSummary(Long studentId) {
-        return api.getSummary(studentId);
+    public Call<StudentSummaryDTO> getSummary(Long studentId, Long semesterId) {
+        return api.getSummary(studentId, semesterId);
     }
 }

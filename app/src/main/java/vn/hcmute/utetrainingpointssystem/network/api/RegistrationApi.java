@@ -24,10 +24,10 @@ public interface RegistrationApi {
     @PUT("api/event-registrations/{id}/cancel")
     Call<EventRegistrationDTO> cancel(@Path("id") Long id);
 
-    @PUT("api/event-registrations/{eventId}/checkin/{studentId}")
+    @PUT("api/event-registrations/{eventId}/check-in/{studentId}")
     Call<EventRegistrationDTO> checkin(@Path("eventId") Long eventId, @Path("studentId") Long studentId);
 
-    @PUT("api/event-registrations/{eventId}/checkout/{studentId}")
+    @PUT("api/event-registrations/{eventId}/check-out/{studentId}")
     Call<EventRegistrationDTO> checkout(@Path("eventId") Long eventId, @Path("studentId") Long studentId);
 
     @PUT("api/event-registrations/{eventId}/complete-survey/{studentId}")

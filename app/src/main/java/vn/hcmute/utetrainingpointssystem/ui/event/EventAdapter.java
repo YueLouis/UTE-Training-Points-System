@@ -1,8 +1,12 @@
 package vn.hcmute.utetrainingpointssystem.ui.event;
 
+import android.content.Intent;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -27,9 +31,8 @@ public class EventAdapter extends ListAdapter<EventDTO, EventAdapter.VH> {
 
         @Override
         public boolean areContentsTheSame(@NonNull EventDTO oldItem, @NonNull EventDTO newItem) {
-            String ot = oldItem.getTitle() == null ? "" : oldItem.getTitle();
-            String nt = newItem.getTitle() == null ? "" : newItem.getTitle();
-            return ot.equals(nt);
+            return oldItem.getTitle().equals(newItem.getTitle()) &&
+                   oldItem.isRegistered() == newItem.isRegistered();
         }
     };
 
@@ -43,14 +46,44 @@ public class EventAdapter extends ListAdapter<EventDTO, EventAdapter.VH> {
     @Override
     public void onBindViewHolder(@NonNull VH holder, int position) {
         EventDTO e = getItem(position);
-        holder.txtTitle.setText(e.getTitle());
+        holder.tvTitle.setText(e.getTitle());
+        holder.tvPointType.setText(e.getPointType() != null ? e.getPointType() : "DRL");
+        
+        String timeInfo = String.format("%s | %s", e.getStartTime(), e.getType() != null ? e.getType() : "Trực tiếp");
+        holder.tvTime.setText(timeInfo);
+
+        int color;
+        if ("CTXH".equals(e.getPointType())) {
+            color = Color.parseColor("#42A5F5"); // Blue
+        } else if ("CDDN".equals(e.getPointType())) {
+            color = Color.parseColor("#66BB6A"); // Green
+        } else {
+            color = Color.parseColor("#26C6DA"); // Cyan
+        }
+
+        holder.layoutItem.setBackgroundColor(color);
+        holder.tvPointType.setTextColor(color);
+        holder.imgEventIcon.setColorFilter(color);
+
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), EventDetailActivity.class);
+            intent.putExtra("EVENT_ID", e.getId());
+            v.getContext().startActivity(intent);
+        });
     }
 
     static class VH extends RecyclerView.ViewHolder {
-        TextView txtTitle;
+        TextView tvTitle, tvTime, tvPointType;
+        LinearLayout layoutItem;
+        ImageView imgEventIcon;
+
         VH(@NonNull View itemView) {
             super(itemView);
-            txtTitle = itemView.findViewById(R.id.txtTitle);
+            tvTitle = itemView.findViewById(R.id.tvTitle);
+            tvTime = itemView.findViewById(R.id.tvTime);
+            tvPointType = itemView.findViewById(R.id.tvPointType);
+            layoutItem = itemView.findViewById(R.id.layoutItem);
+            imgEventIcon = itemView.findViewById(R.id.imgEventIcon);
         }
     }
 }

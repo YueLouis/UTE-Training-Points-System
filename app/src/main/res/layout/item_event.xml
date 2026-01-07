@@ -1,7 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/txtTitle"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp"
-    android:textSize="16sp"/>
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:id="@+id/layoutItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:background="#26C6DA"
+        android:gravity="center_vertical">
+
+        <!-- Icon container -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp">
+            
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:background="#FFFFFF">
+                
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/calendar_icon1"
+                    app:tint="#26C6DA"
+                    android:id="@+id/imgEventIcon"/>
+
+                <TextView
+                    android:id="@+id/tvPointType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="DRL"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:textColor="#26C6DA"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="12dp">
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="TÊN SỰ KIỆN"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:maxLines="1"
+                android:ellipsize="end"/>
+
+            <TextView
+                android:id="@+id/tvTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Thứ Hai | 12:00 - 16:00 | Trực tiếp"
+                android:textColor="@android:color/white"
+                android:textSize="10sp"
+                android:layout_marginTop="2dp"
+                android:alpha="0.9"/>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nhấn vào để\nxem chi tiết"
+            android:textColor="#CCFFFFFF"
+            android:textSize="8sp"
+            android:gravity="end"
+            android:layout_marginStart="8dp"/>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

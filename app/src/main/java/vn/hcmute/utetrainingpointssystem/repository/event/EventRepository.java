@@ -18,8 +18,8 @@ public class EventRepository {
         return api.getAllEvents(studentId);
     }
 
-    public Call<EventDTO> getEventById(long id) {
-        return api.getEventById(id);
+    public Call<EventDTO> getEventById(long id, Long studentId) {
+        return api.getEventById(id, studentId);
     }
 
     public Call<List<EventDTO>> getByCategory(Long categoryId, Long studentId) {

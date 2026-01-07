@@ -104,7 +104,8 @@ public class ProfileActivity extends AppCompatActivity {
         if (studentId == null) return;
 
         PointApi api = RetrofitClient.getClient().create(PointApi.class);
-        api.getSummary(studentId).enqueue(new Callback<StudentSummaryDTO>() {
+        // Truyền thêm semesterId = 1L (mặc định) để khớp với API mới
+        api.getSummary(studentId, 1L).enqueue(new Callback<StudentSummaryDTO>() {
             @Override
             public void onResponse(Call<StudentSummaryDTO> call, Response<StudentSummaryDTO> response) {
                 if (!response.isSuccessful() || response.body() == null) {

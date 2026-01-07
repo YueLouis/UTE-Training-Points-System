@@ -20,9 +20,9 @@ public class EventListViewModel extends ViewModel {
     private final MutableLiveData<ResultState<List<EventDTO>>> eventsResult = new MutableLiveData<>();
     public LiveData<ResultState<List<EventDTO>>> getEventsResult() { return eventsResult; }
 
-    public void fetchEvents() {
+    public void fetchEvents(Long studentId) {
         eventsResult.setValue(ResultState.loading());
-        repo.getAllEvents(null).enqueue(new Callback<List<EventDTO>>() {
+        repo.getAllEvents(studentId).enqueue(new Callback<List<EventDTO>>() {
             @Override
             public void onResponse(Call<List<EventDTO>> call, Response<List<EventDTO>> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -34,7 +34,7 @@ public class EventListViewModel extends ViewModel {
 
             @Override
             public void onFailure(Call<List<EventDTO>> call, Throwable t) {
-                eventsResult.setValue(ResultState.error("Network lỗi: " + t.getMessage()));
+                eventsResult.setValue(ResultState.error("Lỗi kết nối: " + t.getMessage()));
             }
         });
     }

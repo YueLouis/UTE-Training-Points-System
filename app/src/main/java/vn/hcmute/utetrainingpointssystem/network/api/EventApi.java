@@ -18,7 +18,10 @@ public interface EventApi {
     Call<List<EventDTO>> getAllEvents(@Query("studentId") Long studentId);
 
     @GET("api/events/{id}")
-    Call<EventDTO> getEventById(@Path("id") Long id);
+    Call<EventDTO> getEventById(
+            @Path("id") Long id,
+            @Query("studentId") Long studentId
+    );
 
     @GET("api/events/by-category/{categoryId}")
     Call<List<EventDTO>> getByCategory(
