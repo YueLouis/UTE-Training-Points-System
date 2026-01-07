@@ -35,6 +35,7 @@ build/
 # Android/Gradle local
 .gradle/
 local.properties
+<<<<<<< HEAD
 **/build/
 
 # IntelliJ/Android Studio
@@ -57,3 +58,8 @@ _import/
 local.properties
 .gradle/
 **/build/
+=======
+>>>>>>> 6339fe3 (Push all code to github sub branch)
+_import/
+>>>>>>> bb32351 (Remove _import worktrees (local only))
+.idea/
