@@ -43,36 +43,47 @@ public class EventRegistrationController {
 
     // PUT /api/event-registrations/{id}/cancel
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<EventRegistrationDTO> cancel(@PathVariable Long id) {
-        return ResponseEntity.ok(eventRegistrationService.cancel(id));
+    public ResponseEntity<EventRegistrationDTO> cancel(
+            @PathVariable Long id,
+            @RequestParam Long userId
+    ) {
+        return ResponseEntity.ok(eventRegistrationService.cancel(id, userId));
     }
 
     // PUT /api/event-registrations/{eventId}/checkin/{studentId}
     @PutMapping("/{eventId}/checkin/{studentId}")
     public ResponseEntity<EventRegistrationDTO> checkin(
             @PathVariable Long eventId,
-            @PathVariable Long studentId
+            @PathVariable Long studentId,
+            @RequestParam(required = false) Long adminId
     ) {
-        return ResponseEntity.ok(eventRegistrationService.checkin(eventId, studentId));
+        return ResponseEntity.ok(eventRegistrationService.checkin(eventId, studentId, adminId));
     }
 
     // PUT /api/event-registrations/{eventId}/checkout/{studentId}
     @PutMapping("/{eventId}/checkout/{studentId}")
     public ResponseEntity<EventRegistrationDTO> checkout(
             @PathVariable Long eventId,
-            @PathVariable Long studentId
+            @PathVariable Long studentId,
+            @RequestParam(required = false) Long adminId
     ) {
-        return ResponseEntity.ok(eventRegistrationService.checkout(eventId, studentId));
+        return ResponseEntity.ok(eventRegistrationService.checkout(eventId, studentId, adminId));
     }
 
     @PutMapping("/{id}/check-in")
-    public ResponseEntity<EventRegistrationDTO> checkinById(@PathVariable Long id) {
-        return ResponseEntity.ok(eventRegistrationService.checkinById(id));
+    public ResponseEntity<EventRegistrationDTO> checkinById(
+            @PathVariable Long id,
+            @RequestParam(required = false) Long adminId
+    ) {
+        return ResponseEntity.ok(eventRegistrationService.checkinById(id, adminId));
     }
 
     @PutMapping("/{id}/check-out")
-    public ResponseEntity<EventRegistrationDTO> checkoutById(@PathVariable Long id) {
-        return ResponseEntity.ok(eventRegistrationService.checkoutById(id));
+    public ResponseEntity<EventRegistrationDTO> checkoutById(
+            @PathVariable Long id,
+            @RequestParam(required = false) Long adminId
+    ) {
+        return ResponseEntity.ok(eventRegistrationService.checkoutById(id, adminId));
     }
 
     // PUT /api/event-registrations/{eventId}/complete-survey/{studentId}

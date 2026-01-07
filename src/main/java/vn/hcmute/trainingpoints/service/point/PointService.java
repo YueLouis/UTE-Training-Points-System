@@ -9,10 +9,12 @@ import vn.hcmute.trainingpoints.entity.point.PointTransaction;
 import vn.hcmute.trainingpoints.entity.point.PointType;
 import vn.hcmute.trainingpoints.entity.point.StudentSemesterSummary;
 import vn.hcmute.trainingpoints.entity.notification.NotificationType;
+import vn.hcmute.trainingpoints.entity.user.User;
 import vn.hcmute.trainingpoints.repository.event.EventRepository;
 import vn.hcmute.trainingpoints.repository.point.PointTransactionRepository;
 import vn.hcmute.trainingpoints.repository.point.PointTypeRepository;
 import vn.hcmute.trainingpoints.repository.point.StudentSemesterSummaryRepository;
+import vn.hcmute.trainingpoints.repository.user.UserRepository;
 import vn.hcmute.trainingpoints.exception.PointsAlreadyAwardedException;
 import vn.hcmute.trainingpoints.service.notification.NotificationService;
 
@@ -27,6 +29,7 @@ public class PointService {
     private final PointTypeRepository pointTypeRepository;
     private final EventRepository eventRepository;
     private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     /**
      * Cộng điểm khi event COMPLETED (đủ checkin + checkout).
@@ -34,6 +37,14 @@ public class PointService {
      */
     @Transactional
     public void awardPointsForCompletedEvent(Long eventId, Long studentId, Long adminIdOrNull) {
+        if (adminIdOrNull != null) {
+            // Xác thực Admin thật
+            User admin = userRepository.findById(adminIdOrNull).orElse(null);
+            if (admin == null || !"ADMIN".equalsIgnoreCase(admin.getRole())) {
+                throw new RuntimeException("Chỉ Admin mới có quyền phê duyệt điểm thủ công");
+            }
+        }
+
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
 

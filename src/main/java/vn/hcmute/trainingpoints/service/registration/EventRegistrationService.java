@@ -10,8 +10,10 @@ import vn.hcmute.trainingpoints.entity.event.EventMode;
 import vn.hcmute.trainingpoints.entity.event.EventStatus;
 import vn.hcmute.trainingpoints.entity.registration.EventRegistration;
 import vn.hcmute.trainingpoints.entity.registration.EventRegistrationStatus;
+import vn.hcmute.trainingpoints.entity.user.User;
 import vn.hcmute.trainingpoints.repository.event.EventRepository;
 import vn.hcmute.trainingpoints.repository.registration.EventRegistrationRepository;
+import vn.hcmute.trainingpoints.repository.user.UserRepository;
 import vn.hcmute.trainingpoints.service.point.PointService;
 
 import org.springframework.http.HttpStatus;
@@ -28,10 +30,22 @@ public class EventRegistrationService {
     private final EventRegistrationRepository eventRegistrationRepository;
     private final EventRepository eventRepository;
     private final PointService pointService;
+    private final UserRepository userRepository;
 
     private Event getEventOrThrow(Long eventId) {
         return eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
+    }
+
+    private void verifyAdmin(Long adminId) {
+        if (adminId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Yêu cầu quyền Quản trị viên");
+        }
+        User user = userRepository.findById(adminId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Tài khoản Admin không tồn tại"));
+        if (!"ADMIN".equalsIgnoreCase(user.getRole())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền thực hiện hành động này");
+        }
     }
 
     private EventRegistration getRegOrNull(Long eventId, Long studentId) {
@@ -58,29 +72,27 @@ public class EventRegistrationService {
     public EventRegistrationDTO register(EventRegistrationRequest request) {
         Event event = getEventOrThrow(request.getEventId());
 
-        // closed
         if (event.getStatus() == EventStatus.CLOSED) {
-            throw new RuntimeException("Event is closed");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sự kiện đã đóng");
         }
 
-        // trùng đăng ký (có record và chưa cancel)
-        eventRegistrationRepository.findByEventIdAndStudentId(request.getEventId(), request.getStudentId())
-                .ifPresent(r -> {
-                    if (r.getStatus() != EventRegistrationStatus.CANCELLED) {
-                        throw new RuntimeException("Student already registered for this event");
-                    }
-                });
+        // Kiểm tra xem đã có bản ghi chưa
+        EventRegistration existing = getRegOrNull(request.getEventId(), request.getStudentId());
+        
+        if (existing != null && existing.getStatus() != EventRegistrationStatus.CANCELLED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sinh viên đã đăng ký sự kiện này rồi");
+        }
 
         // deadline
         if (event.getRegistrationDeadline() != null &&
                 LocalDateTime.now().isAfter(event.getRegistrationDeadline())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Registration deadline has passed");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đã quá hạn đăng ký");
         }
 
         // ATTENDANCE: chặn đăng ký khi đã bắt đầu
         if (event.getEventMode() == null || event.getEventMode() == EventMode.ATTENDANCE) {
             if (event.getStartTime() != null && !LocalDateTime.now().isBefore(event.getStartTime())) {
-                throw new RuntimeException("Event already started");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sự kiện đã bắt đầu, không thể đăng ký mới");
             }
         }
 
@@ -89,17 +101,26 @@ public class EventRegistrationService {
             long current = eventRegistrationRepository
                     .countByEventIdAndStatusNot(event.getId(), EventRegistrationStatus.CANCELLED);
             if (current >= event.getMaxParticipants()) {
-                throw new RuntimeException("Event is full");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sự kiện đã đủ số lượng tham gia");
             }
         }
 
-        EventRegistration registration = EventRegistration.builder()
-                .eventId(request.getEventId())
-                .studentId(request.getStudentId())
-                .registrationTime(LocalDateTime.now())
-                .status(EventRegistrationStatus.REGISTERED)
-                .note(request.getNote())
-                .build();
+        EventRegistration registration;
+        if (existing != null) {
+            // Tái sử dụng bản ghi cũ (đã từng CANCELLED)
+            registration = existing;
+            registration.setStatus(EventRegistrationStatus.REGISTERED);
+            registration.setRegistrationTime(LocalDateTime.now());
+            registration.setNote(request.getNote());
+        } else {
+            registration = EventRegistration.builder()
+                    .eventId(request.getEventId())
+                    .studentId(request.getStudentId())
+                    .registrationTime(LocalDateTime.now())
+                    .status(EventRegistrationStatus.REGISTERED)
+                    .note(request.getNote())
+                    .build();
+        }
 
         registration = eventRegistrationRepository.save(registration);
         return toDTO(registration);
@@ -123,12 +144,20 @@ public class EventRegistrationService {
 
     // 4) Hủy đăng ký
     @Transactional
-    public EventRegistrationDTO cancel(Long registrationId) {
+    public EventRegistrationDTO cancel(Long registrationId, Long userId) {
         EventRegistration reg = eventRegistrationRepository.findById(registrationId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bản ghi đăng ký"));
 
+        // Xác thực người dùng có quyền hủy (Admin hoặc chính chủ SV)
+        User requester = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Người dùng không tồn tại"));
+
+        if (!"ADMIN".equalsIgnoreCase(requester.getRole()) && !reg.getStudentId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền hủy đăng ký của người khác");
+        }
+
         if (reg.getStatus() != EventRegistrationStatus.REGISTERED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ có thể hủy khi ở trạng thái Đã đăng ký");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ có thể hủy khi đang ở trạng thái Đã đăng ký");
         }
 
         reg.setStatus(EventRegistrationStatus.CANCELLED);
@@ -137,7 +166,9 @@ public class EventRegistrationService {
 
     // 5) Check-in (CHỈ cho ATTENDANCE)
     @Transactional
-    public EventRegistrationDTO checkin(Long eventId, Long studentId) {
+    public EventRegistrationDTO checkin(Long eventId, Long studentId, Long adminId) {
+        verifyAdmin(adminId); // Xác thực quyền Admin
+
         Event event = getEventOrThrow(eventId);
 
         if (event.getStatus() == EventStatus.CLOSED) {
@@ -150,6 +181,14 @@ public class EventRegistrationService {
         EventRegistration reg = getRegOrNull(eventId, studentId);
 
         if (reg == null) {
+            // Check max participants cho walk-in
+            if (event.getMaxParticipants() != null) {
+                long current = eventRegistrationRepository.countByEventIdAndStatusNot(event.getId(), EventRegistrationStatus.CANCELLED);
+                if (current >= event.getMaxParticipants()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sự kiện đã đầy, không thể thêm sinh viên mới");
+                }
+            }
+
             reg = EventRegistration.builder()
                     .eventId(eventId)
                     .studentId(studentId)
@@ -159,12 +198,15 @@ public class EventRegistrationService {
                     .build();
         } else {
             if (reg.getStatus() == EventRegistrationStatus.CANCELLED) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đăng ký này đã bị hủy");
-            }
-            if (reg.getCheckinTime() == null) {
+                // Hồi phục lại đăng ký khi Admin check-in cho SV đã hủy
+                reg.setStatus(EventRegistrationStatus.CHECKED_IN);
                 reg.setCheckinTime(LocalDateTime.now());
+            } else {
+                if (reg.getCheckinTime() == null) {
+                    reg.setCheckinTime(LocalDateTime.now());
+                }
+                reg.setStatus(EventRegistrationStatus.CHECKED_IN);
             }
-            reg.setStatus(EventRegistrationStatus.CHECKED_IN);
         }
 
         reg = eventRegistrationRepository.save(reg);
@@ -173,7 +215,9 @@ public class EventRegistrationService {
 
     // 6) Check-out (CHỈ cho ATTENDANCE) -> COMPLETED + cộng điểm
     @Transactional
-    public EventRegistrationDTO checkout(Long eventId, Long studentId) {
+    public EventRegistrationDTO checkout(Long eventId, Long studentId, Long adminId) {
+        verifyAdmin(adminId); // Xác thực quyền Admin
+
         Event event = getEventOrThrow(eventId);
 
         if (event.getStatus() == EventStatus.CLOSED) {
@@ -203,7 +247,7 @@ public class EventRegistrationService {
         reg.setStatus(EventRegistrationStatus.COMPLETED);
         reg = eventRegistrationRepository.save(reg);
 
-        pointService.awardPointsForCompletedEvent(eventId, studentId, null);
+        pointService.awardPointsForCompletedEvent(eventId, studentId, adminId);
 
         // auto-close nếu đủ slot
         autoCloseIfFull(event);
@@ -221,6 +265,11 @@ public class EventRegistrationService {
         }
         if (event.getEventMode() != EventMode.ONLINE) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đây là sự kiện OFFLINE. Vui lòng check-in/check-out.");
+        }
+
+        // Kiểm tra thời gian bắt đầu (MỚI: Chống nhận điểm sớm)
+        if (event.getStartTime() != null && LocalDateTime.now().isBefore(event.getStartTime())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sự kiện chưa bắt đầu diễn ra");
         }
 
         // Kiểm tra mã bí mật (Nếu Admin có thiết lập)
@@ -279,7 +328,7 @@ public class EventRegistrationService {
 
         reg = eventRegistrationRepository.save(reg);
 
-        // cộng điểm
+        // cộng điểm (Online SV tự làm nên adminId = null)
         pointService.awardPointsForCompletedEvent(eventId, studentId, null);
 
         // auto-close nếu đủ slot
@@ -289,17 +338,17 @@ public class EventRegistrationService {
     }
 
     @Transactional
-    public EventRegistrationDTO checkinById(Long registrationId) {
+    public EventRegistrationDTO checkinById(Long registrationId, Long adminId) {
         EventRegistration reg = eventRegistrationRepository.findById(registrationId)
-                .orElseThrow(() -> new RuntimeException("Registration not found"));
-        return checkin(reg.getEventId(), reg.getStudentId());
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đăng ký"));
+        return checkin(reg.getEventId(), reg.getStudentId(), adminId);
     }
 
     @Transactional
-    public EventRegistrationDTO checkoutById(Long registrationId) {
+    public EventRegistrationDTO checkoutById(Long registrationId, Long adminId) {
         EventRegistration reg = eventRegistrationRepository.findById(registrationId)
-                .orElseThrow(() -> new RuntimeException("Registration not found"));
-        return checkout(reg.getEventId(), reg.getStudentId());
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đăng ký"));
+        return checkout(reg.getEventId(), reg.getStudentId(), adminId);
     }
 
     private void autoCloseIfFull(Event event) {
