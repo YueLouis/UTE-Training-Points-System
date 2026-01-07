@@ -12,9 +12,11 @@ import vn.hcmute.trainingpoints.dto.event.EventRequest;
 import vn.hcmute.trainingpoints.entity.event.Event;
 import vn.hcmute.trainingpoints.entity.event.EventMode;
 import vn.hcmute.trainingpoints.entity.event.EventStatus;
+import vn.hcmute.trainingpoints.entity.event.Semester;
 import vn.hcmute.trainingpoints.entity.registration.EventRegistration;
 import vn.hcmute.trainingpoints.entity.registration.EventRegistrationStatus;
 import vn.hcmute.trainingpoints.repository.event.EventRepository;
+import vn.hcmute.trainingpoints.repository.event.SemesterRepository;
 import vn.hcmute.trainingpoints.repository.registration.EventRegistrationRepository;
 
 import java.time.LocalDateTime;
@@ -30,6 +32,7 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final EventRegistrationRepository eventRegistrationRepository;
+    private final SemesterRepository semesterRepository;
 
     public List<EventDTO> searchEvents(Long studentId, Long semesterId, Long categoryId, String q) {
         Specification<Event> spec = (root, query, cb) -> {
@@ -80,6 +83,31 @@ public class EventService {
     }
 
     // --------- MAPPING ---------
+    private void validateEventTimeWithSemester(Long semesterId, LocalDateTime startTime, LocalDateTime endTime) {
+        if (semesterId == null) return;
+        
+        Semester semester = semesterRepository.findById(semesterId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Học kỳ không tồn tại"));
+
+        if (startTime != null) {
+            if (startTime.toLocalDate().isBefore(semester.getStartDate()) || 
+                startTime.toLocalDate().isAfter(semester.getEndDate())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                    "Thời gian bắt đầu sự kiện phải nằm trong học kỳ: " + semester.getName() + 
+                    " (" + semester.getStartDate() + " đến " + semester.getEndDate() + ")");
+            }
+        }
+
+        if (endTime != null) {
+            if (endTime.toLocalDate().isBefore(semester.getStartDate()) || 
+                endTime.toLocalDate().isAfter(semester.getEndDate())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                    "Thời gian kết thúc sự kiện phải nằm trong học kỳ: " + semester.getName() + 
+                    " (" + semester.getStartDate() + " đến " + semester.getEndDate() + ")");
+            }
+        }
+    }
+
     private EventDTO toDTO(Event e) {
         if (e == null) return null;
 
@@ -106,6 +134,9 @@ public class EventService {
     }
 
     private void updateEntityFromRequest(Event event, EventRequest req) {
+        // Validate thời gian với học kỳ trước khi lưu
+        validateEventTimeWithSemester(req.getSemesterId(), req.getStartTime(), req.getEndTime());
+
         event.setSemesterId(req.getSemesterId());
         event.setCategoryId(req.getCategoryId());
         event.setTitle(req.getTitle());
