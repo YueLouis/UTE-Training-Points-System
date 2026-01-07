@@ -110,11 +110,20 @@ public class AuthService {
 
         resetRepo.save(row);
 
-        // ✅ Gửi mail thật
-        otpMailService.sendOtp(user.getEmail(), code, (int) EXPIRE_SECONDS);
+        // ✅ IN MÃ OTP RA CONSOLE ĐỂ DEMO (Tránh lỗi Railway chặn mail)
+        System.out.println("==========================================");
+        System.out.println("OTP CODE FOR " + user.getEmail() + " IS: " + code);
+        System.out.println("==========================================");
+
+        // ✅ Gửi mail thật (Nếu bị chặn thì xem log console bên trên)
+        try {
+            otpMailService.sendOtp(user.getEmail(), code, (int) EXPIRE_SECONDS);
+        } catch (Exception e) {
+            System.err.println("Railway blocked email sending: " + e.getMessage());
+        }
 
         return SimpleMessageResponse.builder()
-                .message("OTP sent")
+                .message("OTP sent (check logs if mail is blocked)")
                 .build();
     }
 
