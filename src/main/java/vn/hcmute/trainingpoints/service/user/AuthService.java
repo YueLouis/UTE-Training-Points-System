@@ -207,6 +207,29 @@ public class AuthService {
         // ✅ Update password (đổi field cho đúng entity User của em)
         // Nếu entity em là user.setPassword(...); thì sửa dòng này:
         user.setPasswordHash(passwordEncoder.encode(newPassword));
+
+        // ✅ Check if the new password is the same as the current password
+        if (passwordEncoder.matches(newPassword, user.getPasswordHash())) {
+            throw new ResponseStatusException(BAD_REQUEST, "New password cannot be the same as the current password");
+        }
+
+        // ✅ Check if the OTP code has been used in the last 1 month
+        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+        boolean isCodeUsedRecently = resetRepo.findAllByEmailAndUsedAtAfter(user.getEmail(), oneMonthAgo)
+                .stream()
+                .anyMatch(codeEntity -> codeEntity.getCodeHash().equalsIgnoreCase(inputHash));
+        if (isCodeUsedRecently) {
+            throw new ResponseStatusException(BAD_REQUEST, "This code has already been used recently");
+        }
+
+        // ✅ Check if the new password has been used in the last 1 month
+        boolean isPasswordUsedRecently = resetRepo.findAllByEmailAndUsedAtAfter(user.getEmail(), oneMonthAgo)
+                .stream()
+                .anyMatch(codeEntity -> passwordEncoder.matches(newPassword, user.getPasswordHash()));
+        if (isPasswordUsedRecently) {
+            throw new ResponseStatusException(BAD_REQUEST, "This password has already been used recently");
+        }
+
         userRepository.save(user);
 
         // ✅ Mark OTP used
