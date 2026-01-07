@@ -40,3 +40,13 @@ local.properties
 # IntelliJ/Android Studio
 .idea/
 *.iml
+
+# Local Gradle/Android
+.gradle/
+**/build/
+build/
+local.properties
+
+# IDE
+.idea/
+*.iml
