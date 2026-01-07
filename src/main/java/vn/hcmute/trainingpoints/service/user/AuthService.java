@@ -46,9 +46,10 @@ public class AuthService {
             throw new ResponseStatusException(BAD_REQUEST, "Password is required");
         }
 
-        // Tìm theo email hoặc studentCode
+        // Tìm theo email, studentCode hoặc phone
         User user = userRepository.findByEmail(username)
                 .or(() -> userRepository.findByStudentCode(username))
+                .or(() -> userRepository.findByPhone(username))
                 .orElseThrow(() -> new ResponseStatusException(UNAUTHORIZED, "Invalid username or password"));
 
         if (!passwordEncoder.matches(password, user.getPasswordHash())) {
