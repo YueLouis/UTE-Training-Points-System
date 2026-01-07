@@ -14,6 +14,13 @@ public class EventRegistrationDTO {
     private Long id;
     private Long eventId;
     private Long studentId;
+
+    // Thêm các trường thông tin sinh viên để FE hiển thị
+    private String studentCode;
+    private String studentName;
+    private String studentClass;
+    private String studentFaculty;
+
     private LocalDateTime registrationTime;
     private EventRegistrationStatus status;
     private LocalDateTime checkinTime;

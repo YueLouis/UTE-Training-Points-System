@@ -55,7 +55,8 @@ public class EventRegistrationService {
 
     // Map entity → DTO
     private EventRegistrationDTO toDTO(EventRegistration reg) {
-        return EventRegistrationDTO.builder()
+        if (reg == null) return null;
+        EventRegistrationDTO dto = EventRegistrationDTO.builder()
                 .id(reg.getId())
                 .eventId(reg.getEventId())
                 .studentId(reg.getStudentId())
@@ -65,6 +66,16 @@ public class EventRegistrationService {
                 .checkoutTime(reg.getCheckoutTime())
                 .note(reg.getNote())
                 .build();
+
+        // Bổ sung thông tin sinh viên từ bảng users để FE hiển thị MSSV và Họ tên
+        userRepository.findById(reg.getStudentId()).ifPresent(user -> {
+            dto.setStudentCode(user.getStudentCode());
+            dto.setStudentName(user.getFullName());
+            dto.setStudentClass(user.getClassName());
+            dto.setStudentFaculty(user.getFaculty());
+        });
+
+        return dto;
     }
 
     // 1) Đăng ký tham gia sự kiện (cả ATTENDANCE và ONLINE đều dùng được)
