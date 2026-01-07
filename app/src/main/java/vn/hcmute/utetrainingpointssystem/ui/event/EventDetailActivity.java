@@ -1,9 +1,12 @@
 package vn.hcmute.utetrainingpointssystem.ui.event;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.util.Linkify;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,11 +33,12 @@ public class EventDetailActivity extends AppCompatActivity {
 
     private ImageView imgBanner;
     private TextView tvTitle, tvStatus, tvTime, tvLocation, tvDesc, tvRegisterCount;
-    private TextView tvSurvey; // ✅ thêm
+    private TextView tvSurvey;
 
     private EventDTO loaded;
 
     private final TimeZone VN_TZ = TimeZone.getTimeZone("Asia/Ho_Chi_Minh");
+    private final TimeZone UTC_TZ = TimeZone.getTimeZone("UTC");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,9 +55,25 @@ public class EventDetailActivity extends AppCompatActivity {
         tvLocation = findViewById(R.id.tvLocation);
         tvDesc = findViewById(R.id.tvDesc);
         tvRegisterCount = findViewById(R.id.tvRegisterCount);
-        tvSurvey = findViewById(R.id.tvSurvey); // ✅
+        tvSurvey = findViewById(R.id.tvSurvey);
 
         vm = new ViewModelProvider(this).get(EventManageViewModel.class);
+
+        // participants
+        Button btnParticipants = findViewById(R.id.btnParticipants);
+        if (btnParticipants != null) {
+            btnParticipants.setOnClickListener(v -> {
+
+                // lấy adminId từ prefs (nếu có). Nếu chưa có vẫn ok, Participants sẽ popup nhập.
+                SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+                long adminId = prefs.getLong("userId", 0L);
+
+                Intent i = new Intent(this, EventParticipantsActivity.class);
+                i.putExtra("eventId", eventId);
+                i.putExtra("adminId", adminId);
+                startActivity(i);
+            });
+        }
 
         vm.getEventDetailState().observe(this, state -> {
             if (state instanceof ResultState.Success) {
@@ -61,7 +81,9 @@ public class EventDetailActivity extends AppCompatActivity {
                 if (loaded == null) return;
 
                 tvTitle.setText(nz(loaded.title));
-                tvStatus.setText(nz(loaded.status));
+
+                String clientStatus = computeClientStatus(loaded);
+                tvStatus.setText(clientStatus);
 
                 String start = formatToVN(nz(loaded.startTime));
                 String end = formatToVN(nz(loaded.endTime));
@@ -70,16 +92,20 @@ public class EventDetailActivity extends AppCompatActivity {
                 tvLocation.setText(nz(loaded.location));
                 tvDesc.setText(nz(loaded.description));
 
-                Glide.with(this).load(loaded.bannerUrl).into(imgBanner);
+                if (imgBanner != null) {
+                    Glide.with(this).load(loaded.bannerUrl).into(imgBanner);
+                }
 
-                // ✅ Survey URL: có thì hiện, không có thì ẩn
+                // survey
                 String sUrl = (loaded.surveyUrl == null) ? "" : loaded.surveyUrl.trim();
-                if (TextUtils.isEmpty(sUrl)) {
-                    tvSurvey.setVisibility(View.GONE);
-                } else {
-                    tvSurvey.setVisibility(View.VISIBLE);
-                    tvSurvey.setText("Survey: " + sUrl);
-                    Linkify.addLinks(tvSurvey, Linkify.WEB_URLS);
+                if (tvSurvey != null) {
+                    if (TextUtils.isEmpty(sUrl)) {
+                        tvSurvey.setVisibility(View.GONE);
+                    } else {
+                        tvSurvey.setVisibility(View.VISIBLE);
+                        tvSurvey.setText("Survey: " + sUrl);
+                        Linkify.addLinks(tvSurvey, Linkify.WEB_URLS);
+                    }
                 }
 
                 vm.loadRegistrationCount(eventId);
@@ -90,6 +116,8 @@ public class EventDetailActivity extends AppCompatActivity {
         });
 
         vm.getRegistrationCountState().observe(this, state -> {
+            if (tvRegisterCount == null) return;
+
             if (state instanceof ResultState.Success) {
                 Integer count = ((ResultState.Success<Integer>) state).data;
                 int c = (count == null) ? 0 : count;
@@ -98,29 +126,41 @@ public class EventDetailActivity extends AppCompatActivity {
                 String maxText = (max == null) ? "?" : String.valueOf(max);
 
                 tvRegisterCount.setText("Đã đăng ký: " + c + " / " + maxText);
-            } else if (state instanceof ResultState.Error) {
-                tvRegisterCount.setText("Đã đăng ký: ? / " + ((loaded != null && loaded.maxParticipants != null) ? loaded.maxParticipants : "?"));
+            } else {
+                String maxText = (loaded != null && loaded.maxParticipants != null)
+                        ? String.valueOf(loaded.maxParticipants)
+                        : "?";
+                tvRegisterCount.setText("Đã đăng ký: ? / " + maxText);
             }
         });
 
-        // load lần đầu
         vm.loadEventById(eventId);
     }
 
-    // ✅ QUAN TRỌNG: quay lại từ Edit -> Detail phải reload lại
     @Override
     protected void onResume() {
         super.onResume();
-        if (vm != null && eventId != -1) {
-            vm.loadEventById(eventId);
-        }
+        if (vm != null && eventId != -1) vm.loadEventById(eventId);
     }
 
     private String nz(String s) { return s == null ? "" : s; }
 
-    // ✅ Format giờ luôn theo VN (không phụ thuộc timezone emulator)
+    private String computeClientStatus(EventDTO e) {
+        Date start = parseIsoApiSmart(e.startTime);
+        Date end = parseIsoApiSmart(e.endTime);
+        Date deadline = parseIsoApiSmart(e.registrationDeadline);
+
+        long now = System.currentTimeMillis();
+
+        if (end != null && now >= end.getTime()) return "ENDED";
+        if (start != null && end != null && now >= start.getTime() && now < end.getTime()) return "ONGOING";
+
+        if (deadline != null && now <= deadline.getTime()) return "OPEN_FOR_REGISTRATION";
+        return "CLOSED";
+    }
+
     private String formatToVN(String iso) {
-        Date d = parseIsoSmart(iso);
+        Date d = parseIsoApiSmart(iso);
         if (d == null) return iso;
 
         SimpleDateFormat out = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
@@ -128,8 +168,7 @@ public class EventDetailActivity extends AppCompatActivity {
         return out.format(d);
     }
 
-    // ✅ Parse ISO dạng có Z / không Z đều được
-    private Date parseIsoSmart(String iso) {
+    private Date parseIsoApiSmart(String iso) {
         if (iso == null) return null;
         iso = iso.trim();
         if (iso.isEmpty()) return null;
@@ -145,15 +184,11 @@ public class EventDetailActivity extends AppCompatActivity {
             try {
                 SimpleDateFormat in = new SimpleDateFormat(p, Locale.US);
                 in.setLenient(false);
-
-                // ✅ QUAN TRỌNG: luôn parse theo UTC (kể cả không có Z)
-                in.setTimeZone(TimeZone.getTimeZone("UTC"));
-
+                in.setTimeZone(UTC_TZ);
                 Date d = in.parse(iso);
                 if (d != null) return d;
             } catch (Exception ignore) {}
         }
         return null;
     }
-
 }

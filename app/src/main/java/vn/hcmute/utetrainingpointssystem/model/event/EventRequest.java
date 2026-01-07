@@ -1,28 +1,27 @@
 package vn.hcmute.utetrainingpointssystem.model.event;
 
 public class EventRequest {
-    public Long semesterId;
-    public Long categoryId;
+    public Long semesterId;                 // * required
+    public Long categoryId;                 // * required
 
-    public String title;
+    public String title;                    // * required
     public String description;
     public String location;
     public String bannerUrl;
 
-    public String startTime;
-    public String endTime;
-    public String registrationDeadline;
+    public String startTime;                // * required (date-time)
+    public String endTime;                  // * required (date-time)
+    public String registrationDeadline;     // optional (date-time)
 
-    public Integer maxParticipants;
-
-    public Long pointTypeId;
-    public Integer pointValue;
+    public Integer maxParticipants;         // >= 0
+    public Long pointTypeId;                // * required
+    public Integer pointValue;              // >= 0
 
     public Long createdBy;
+    public String eventMode;                // string (enum bên BE)
 
-    public String status;
-    public String eventMode;
     public String surveyUrl;
+    public String surveySecretCode;
 
     public EventRequest() {}
 }

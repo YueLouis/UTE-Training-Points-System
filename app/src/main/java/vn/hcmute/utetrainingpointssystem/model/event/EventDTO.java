@@ -19,9 +19,25 @@ public class EventDTO {
     public Integer pointValue;
 
     public Long createdBy;
-    public String status;          // "OPEN", "CLOSED", ...
-    public String computedStatus;  // backend compute
 
-    public String eventMode;       // "ATTENDANCE"
+    public String status;
+
+    @com.google.gson.annotations.SerializedName("computedStatus")
+    public String computedStatus;
+
+    public Boolean canRegister;
+    public Boolean canCheckin;
+    public Boolean canCheckout;
+
+    public Boolean registered;
+    public Boolean checkedIn;
+    public Boolean completed;
+
+    public String registrationStatus;
+    public String studentCheckinTime;
+    public String studentCheckoutTime;
+
+    public String eventMode;
     public String surveyUrl;
+    public String surveySecretCode;
 }

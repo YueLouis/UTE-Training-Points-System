@@ -1,15 +1,23 @@
 package vn.hcmute.utetrainingpointssystem.ui.event;
 
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.Objects;
 
 import vn.hcmute.utetrainingpointssystem.R;
 import vn.hcmute.utetrainingpointssystem.model.event.EventDTO;
@@ -39,11 +47,23 @@ public class AdminEventAdapter extends ListAdapter<EventDTO, AdminEventAdapter.V
 
         @Override
         public boolean areContentsTheSame(@NonNull EventDTO oldItem, @NonNull EventDTO newItem) {
-            String ot = oldItem.title == null ? "" : oldItem.title;
-            String nt = newItem.title == null ? "" : newItem.title;
-            String os = oldItem.status == null ? "" : oldItem.status;
-            String ns = newItem.status == null ? "" : newItem.status;
-            return ot.equals(nt) && os.equals(ns);
+            String ot = safe(oldItem.title);
+            String nt = safe(newItem.title);
+
+            String os = statusBadge(oldItem);
+            String ns = statusBadge(newItem);
+
+            return ot.equals(nt)
+                    && os.equals(ns)
+                    && Objects.equals(oldItem.categoryId, newItem.categoryId);
+        }
+
+        private String safe(String s) { return s == null ? "" : s; }
+
+        private String statusBadge(EventDTO e) {
+            String computed = safe(e.computedStatus).trim();
+            if (!computed.isEmpty()) return computed;
+            return safe(e.status).trim();
         }
     };
 
@@ -58,22 +78,70 @@ public class AdminEventAdapter extends ListAdapter<EventDTO, AdminEventAdapter.V
     public void onBindViewHolder(@NonNull VH h, int position) {
         EventDTO e = getItem(position);
 
-        h.txtTitle.setText(e.title == null ? "" : e.title);
-        h.txtStatus.setText(e.status == null ? "" : e.status);
+        // ===== category -> tag + color =====
+        int cardColor;
+        String tagText;
 
+        Long cid = e.categoryId; // đúng field của em
+
+        if (cid != null && cid == 1L) {
+            tagText = "DRL";
+            cardColor = ContextCompat.getColor(h.itemView.getContext(), R.color.cat_prl);
+        } else if (cid != null && cid == 2L) {
+            tagText = "CTXH";
+            cardColor = ContextCompat.getColor(h.itemView.getContext(), R.color.cat_ctxh);
+        } else if (cid != null && cid == 3L) {
+            tagText = "CDDN";
+            cardColor = ContextCompat.getColor(h.itemView.getContext(), R.color.cat_cddn);
+        } else {
+            tagText = "N/A";
+            cardColor = 0xFFEFEFEF;
+        }
+
+        h.tvTag.setText(tagText);
+
+        // ===== nền item (root) =====
+        GradientDrawable bg = new GradientDrawable();
+        bg.setCornerRadius(24f);
+        bg.setColor(cardColor);
+        h.root.setBackground(bg);
+
+        // ===== nền box icon nhạt hơn =====
+        int lightColor = ColorUtils.blendARGB(cardColor, Color.WHITE, 0.55f);
+
+        Drawable boxBg = h.boxIcon.getBackground();
+        if (boxBg != null) {
+            boxBg = boxBg.mutate();
+            boxBg.setTint(lightColor);
+        }
+
+        // ===== bind text =====
+        h.txtTitle.setText(e.title == null ? "" : e.title);
+
+        String computed = e.computedStatus == null ? "" : e.computedStatus.trim();
+        String manual = e.status == null ? "" : e.status.trim();
+        h.txtStatus.setText(!computed.isEmpty() ? computed : manual);
+
+        // ===== clicks =====
         h.itemView.setOnClickListener(v -> { if (itemClick != null) itemClick.onClick(e); });
         h.btnEdit.setOnClickListener(v -> { if (editClick != null) editClick.onEdit(e); });
         h.btnDelete.setOnClickListener(v -> { if (deleteClick != null) deleteClick.onDelete(e); });
     }
 
     static class VH extends RecyclerView.ViewHolder {
-        TextView txtTitle, txtStatus;
+        View root;
+        LinearLayout boxIcon;
+        TextView tvTag, txtTitle, txtStatus;
         ImageButton btnEdit, btnDelete;
 
         VH(@NonNull View itemView) {
             super(itemView);
-            txtTitle = itemView.findViewById(R.id.txtTitle);
-            txtStatus = itemView.findViewById(R.id.txtStatus);
+            root = itemView.findViewById(R.id.root);
+            boxIcon = itemView.findViewById(R.id.boxIcon);
+            tvTag = itemView.findViewById(R.id.tvTag);
+
+            txtTitle = itemView.findViewById(R.id.tvTitle);
+            txtStatus = itemView.findViewById(R.id.tvStatus);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);
         }

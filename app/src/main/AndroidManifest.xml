@@ -22,6 +22,8 @@
         <activity android:name=".ui.event.AdminEventListActivity" android:exported="false"/>
         <activity android:name=".ui.event.EventDetailActivity" android:exported="false"/>
         <activity android:name=".ui.event.EventEditActivity" android:exported="false"/>
+        <activity android:name=".ui.event.EventParticipantsActivity" />
+
 
         <activity
             android:name=".MainActivity"

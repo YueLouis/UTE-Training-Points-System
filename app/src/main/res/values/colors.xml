@@ -2,4 +2,8 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="cat_prl">#34ebde</color>  <!-- điểm rèn luyện / hoạt động PT (id=1) -->
+    <color name="cat_ctxh">#34abeb</color> <!-- công tác xã hội (id=2) -->
+    <color name="cat_cddn">#34eb80</color> <!-- chuyên đề DN (id=3) -->
+
 </resources>

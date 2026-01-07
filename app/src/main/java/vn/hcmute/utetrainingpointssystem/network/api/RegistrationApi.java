@@ -8,6 +8,7 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 import vn.hcmute.utetrainingpointssystem.model.registration.EventRegistrationDTO;
 import vn.hcmute.utetrainingpointssystem.model.registration.EventRegistrationRequest;
 
@@ -25,10 +26,10 @@ public interface RegistrationApi {
     Call<EventRegistrationDTO> cancel(@Path("id") Long id);
 
     @PUT("api/event-registrations/{eventId}/checkin/{studentId}")
-    Call<EventRegistrationDTO> checkin(@Path("eventId") Long eventId, @Path("studentId") Long studentId);
+    Call<EventRegistrationDTO> checkin(@Path("eventId") Long eventId, @Path("studentId") Long studentId, @Query("adminId") Long adminId);
 
     @PUT("api/event-registrations/{eventId}/checkout/{studentId}")
-    Call<EventRegistrationDTO> checkout(@Path("eventId") Long eventId, @Path("studentId") Long studentId);
+    Call<EventRegistrationDTO> checkout(@Path("eventId") Long eventId, @Path("studentId") Long studentId, @Query("adminId") Long adminId);
 
     @PUT("api/event-registrations/{eventId}/complete-survey/{studentId}")
     Call<EventRegistrationDTO> completeSurvey(@Path("eventId") Long eventId, @Path("studentId") Long studentId);

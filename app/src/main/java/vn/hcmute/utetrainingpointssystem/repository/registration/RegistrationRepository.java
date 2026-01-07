@@ -27,7 +27,7 @@ public class RegistrationRepository {
     }
 
     public Call<EventRegistrationDTO> cancel(Long id) { return api.cancel(id); }
-    public Call<EventRegistrationDTO> checkin(Long eventId, Long studentId) { return api.checkin(eventId, studentId); }
-    public Call<EventRegistrationDTO> checkout(Long eventId, Long studentId) { return api.checkout(eventId, studentId); }
+    public Call<EventRegistrationDTO> checkin(Long eventId, Long studentId, Long adminId) { return api.checkin(eventId, studentId, adminId); }
+    public Call<EventRegistrationDTO> checkout(Long eventId, Long studentId, Long adminId) { return api.checkout(eventId, studentId, adminId); }
     public Call<EventRegistrationDTO> completeSurvey(Long eventId, Long studentId) { return api.completeSurvey(eventId, studentId); }
 }

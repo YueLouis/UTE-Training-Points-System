@@ -5,9 +5,12 @@ import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -32,26 +35,61 @@ import vn.hcmute.utetrainingpointssystem.viewmodel.event.EventManageViewModel;
 
 public class EventEditActivity extends AppCompatActivity {
 
-    private static final String TAG = "EventEditValidate";
+    private static final String TAG = "EventEdit";
 
-    private final TimeZone VN_TZ = TimeZone.getTimeZone("Asia/Ho_Chi_Minh");
+    private final TimeZone VN_TZ = TimeZone.getTimeZone("GMT+07:00");
     private final TimeZone UTC_TZ = TimeZone.getTimeZone("UTC");
+
+    private static final long DEFAULT_POINT_TYPE_ID = 1L;
+    private static final long DEFAULT_CREATED_BY = 1L;
+
+    private static final String MODE_ATTENDANCE = "ATTENDANCE"; // Trực tiếp
+    private static final String MODE_ONLINE = "ONLINE";         // Online
 
     private EventManageViewModel vm;
 
-    private EditText edtTitle, edtDesc, edtLocation, edtBannerUrl, edtSurveyUrl;
-    private EditText edtStartTime, edtEndTime, edtDeadline, edtMaxParticipants, edtPointValue;
-    private Spinner spCategory;
+    private long eventId;
+    private EventDTO loaded;
+
+    // header
+    private ImageView btnBack;
+
+    // UI (KHỚP XML của em)
+    private Spinner spSemester, spCategory, spEventMode;
+    private EditText edtPointValue;
+
+    private EditText edtTitle, edtDesc;
+    private EditText edtStartTime, edtEndTime, edtDeadline;
+    private EditText edtMaxParticipants;
+
+    private View layoutStartTime, layoutEndTime;
+    private ImageView ivStartTime, ivEndTime;
+
+    private View groupLocation, groupSurvey;
+    private EditText edtLocation;
+    private EditText edtSurveyUrl, edtSurveySecretCode;
+
+    private EditText edtBannerUrl;
     private Button btnSave;
 
+    // category
     private final List<EventCategoryDTO> categoryList = new ArrayList<>();
     private ArrayAdapter<String> categoryNameAdapter;
 
-    private Long eventId;
-    private EventDTO loaded;
+    // semester
+    private final List<String> semesterDisplay = new ArrayList<>();
+    private final List<Long> semesterIdList = new ArrayList<>();
+    private ArrayAdapter<String> semesterAdapter;
 
-    // ✅ SUBMIT lên BE: UTC Z
+    // mode (eventMode)
+    private final List<String> modeDisplay = new ArrayList<>();
+    private final List<String> modeValue = new ArrayList<>();
+    private ArrayAdapter<String> modeAdapter;
+
+    // submit time: UTC Z
     private String isoStartUtcZ, isoEndUtcZ, isoDeadlineUtcZ;
+
+    private boolean suppressModeCallback = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,51 +101,204 @@ public class EventEditActivity extends AppCompatActivity {
 
         vm = new ViewModelProvider(this).get(EventManageViewModel.class);
 
+        // ===== bind views =====
+        btnBack = findViewById(R.id.btnBack);
+
+        spSemester = findViewById(R.id.spSemester);
+        spCategory = findViewById(R.id.spCategory);
+        spEventMode = findViewById(R.id.spEventMode);
+
+        edtPointValue = findViewById(R.id.edtPointValue);
+
         edtTitle = findViewById(R.id.edtTitle);
         edtDesc = findViewById(R.id.edtDesc);
-        edtLocation = findViewById(R.id.edtLocation);
-        edtBannerUrl = findViewById(R.id.edtBannerUrl);
-        edtSurveyUrl = findViewById(R.id.edtSurveyUrl);
 
-        spCategory = findViewById(R.id.spCategory);
+        layoutStartTime = findViewById(R.id.layoutStartTime);
+        layoutEndTime = findViewById(R.id.layoutEndTime);
+        ivStartTime = findViewById(R.id.ivStartTime);
+        ivEndTime = findViewById(R.id.ivEndTime);
 
         edtStartTime = findViewById(R.id.edtStartTime);
         edtEndTime = findViewById(R.id.edtEndTime);
         edtDeadline = findViewById(R.id.edtDeadline);
 
         edtMaxParticipants = findViewById(R.id.edtMaxParticipants);
-        edtPointValue = findViewById(R.id.edtPointValue);
+
+        groupLocation = findViewById(R.id.groupLocation);
+        groupSurvey = findViewById(R.id.groupSurvey);
+        edtLocation = findViewById(R.id.edtLocation);
+
+        edtSurveyUrl = findViewById(R.id.edtSurveyUrl);
+        edtSurveySecretCode = findViewById(R.id.edtSurveySecretCode);
+
+        edtBannerUrl = findViewById(R.id.edtBannerUrl);
 
         btnSave = findViewById(R.id.btnSave);
 
-        categoryNameAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, new ArrayList<>());
-        categoryNameAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spCategory.setAdapter(categoryNameAdapter);
+        if (spSemester == null || spCategory == null || spEventMode == null
+                || edtTitle == null || edtDesc == null
+                || edtStartTime == null || edtEndTime == null || edtDeadline == null
+                || groupLocation == null || groupSurvey == null
+                || btnSave == null) {
+            Toast.makeText(this, "XML/ID không khớp. Kiểm tra activity_event_edit.xml", Toast.LENGTH_LONG).show();
+            Log.e(TAG, "Missing view(s) - check IDs");
+            return;
+        }
 
-        // ✅ pickers: chọn VN -> hiển thị VN -> giữ UTC Z để submit
-        edtStartTime.setOnClickListener(v -> pickDateTimeUtcZ(isoZ -> {
+        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
+
+        // ===== setup spinners =====
+        setupSemesterSpinner();
+        setupEventModeSpinner();
+        setupCategorySpinner();
+
+        // ===== time pickers: click vào edt + layout + icon =====
+        View.OnClickListener pickStart = v -> pickDateTimeUtcZ(isoZ -> {
             isoStartUtcZ = isoZ;
             if (TextUtils.isEmpty(isoDeadlineUtcZ)) {
                 isoDeadlineUtcZ = isoStartUtcZ;
-                edtDeadline.setText(displayVNFromUtcZ(isoDeadlineUtcZ));
+                edtDeadline.setText(displayVNFromUtcAny(isoDeadlineUtcZ));
             }
-        }, edtStartTime));
+        }, edtStartTime);
 
-        edtEndTime.setOnClickListener(v -> pickDateTimeUtcZ(isoZ -> {
-            isoEndUtcZ = isoZ;
-        }, edtEndTime));
+        View.OnClickListener pickEnd = v -> pickDateTimeUtcZ(isoZ -> isoEndUtcZ = isoZ, edtEndTime);
 
-        edtDeadline.setOnClickListener(v -> pickDateTimeUtcZ(isoZ -> {
-            isoDeadlineUtcZ = isoZ;
-        }, edtDeadline));
+        edtStartTime.setOnClickListener(pickStart);
+        if (layoutStartTime != null) layoutStartTime.setOnClickListener(pickStart);
+        if (ivStartTime != null) ivStartTime.setOnClickListener(pickStart);
 
+        edtEndTime.setOnClickListener(pickEnd);
+        if (layoutEndTime != null) layoutEndTime.setOnClickListener(pickEnd);
+        if (ivEndTime != null) ivEndTime.setOnClickListener(pickEnd);
+
+        edtDeadline.setOnClickListener(v ->
+                pickDateTimeUtcZ(isoZ -> isoDeadlineUtcZ = isoZ, edtDeadline)
+        );
+
+        // ===== observe VM =====
         observeVM();
+
+        // load data
         vm.loadCategories();
         vm.loadEventById(eventId);
 
+        // default UI
+        applyModeUI(getSelectedModeValue(), false);
+
         btnSave.setOnClickListener(v -> submitUpdate());
     }
+
+    // ================= UI TOGGLE =================
+
+    private void applyModeUI(String mode, boolean clearHiddenFields) {
+        if (MODE_ATTENDANCE.equals(mode)) {
+            groupLocation.setVisibility(View.VISIBLE);
+            groupSurvey.setVisibility(View.GONE);
+
+            if (clearHiddenFields) {
+                if (edtSurveyUrl != null) edtSurveyUrl.setText("");
+                if (edtSurveySecretCode != null) edtSurveySecretCode.setText("");
+            }
+        } else {
+            groupLocation.setVisibility(View.GONE);
+            groupSurvey.setVisibility(View.VISIBLE);
+
+            if (clearHiddenFields) {
+                if (edtLocation != null) edtLocation.setText("");
+            }
+        }
+    }
+
+    // ================= SPINNER SETUP =================
+
+    private void setupSemesterSpinner() {
+        semesterDisplay.clear();
+        semesterIdList.clear();
+
+        semesterDisplay.add("HK1"); semesterIdList.add(1L);
+        semesterDisplay.add("HK2"); semesterIdList.add(2L);
+        semesterDisplay.add("HK Hè"); semesterIdList.add(3L);
+
+        semesterAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, semesterDisplay);
+        semesterAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spSemester.setAdapter(semesterAdapter);
+        spSemester.setSelection(0);
+    }
+
+    private Long getSelectedSemesterId() {
+        int pos = spSemester.getSelectedItemPosition();
+        if (pos < 0 || pos >= semesterIdList.size()) return 1L;
+        return semesterIdList.get(pos);
+    }
+
+    private void setSemesterSelectionById(Long semesterId) {
+        if (semesterId == null) return;
+        for (int i = 0; i < semesterIdList.size(); i++) {
+            if (semesterId.equals(semesterIdList.get(i))) {
+                spSemester.setSelection(i);
+                return;
+            }
+        }
+    }
+
+    private void setupEventModeSpinner() {
+        modeDisplay.clear();
+        modeValue.clear();
+
+        modeDisplay.add("Trực tiếp");
+        modeValue.add(MODE_ATTENDANCE);
+
+        modeDisplay.add("Online");
+        modeValue.add(MODE_ONLINE);
+
+        modeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, modeDisplay);
+        modeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spEventMode.setAdapter(modeAdapter);
+
+        spEventMode.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (suppressModeCallback) return;
+                applyModeUI(getSelectedModeValue(), true);
+            }
+            @Override public void onNothingSelected(AdapterView<?> parent) {}
+        });
+    }
+
+    private String getSelectedModeValue() {
+        int pos = spEventMode.getSelectedItemPosition();
+        if (pos < 0 || pos >= modeValue.size()) return MODE_ATTENDANCE;
+        return modeValue.get(pos);
+    }
+
+    private void setModeSelection(String mode) {
+        for (int i = 0; i < modeValue.size(); i++) {
+            if (modeValue.get(i).equals(mode)) {
+                spEventMode.setSelection(i);
+                return;
+            }
+        }
+        spEventMode.setSelection(0);
+    }
+
+    private void setupCategorySpinner() {
+        categoryNameAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new ArrayList<>());
+        categoryNameAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spCategory.setAdapter(categoryNameAdapter);
+    }
+
+    private void syncCategoryById(Long categoryId) {
+        if (categoryId == null) return;
+        if (categoryList.isEmpty()) return;
+
+        for (int i = 0; i < categoryList.size(); i++) {
+            if (categoryList.get(i).id != null && categoryId.equals(categoryList.get(i).id)) {
+                spCategory.setSelection(i);
+                return;
+            }
+        }
+    }
+
+    // ================= VM OBSERVE =================
 
     private void observeVM() {
         vm.getCategoriesState().observe(this, state -> {
@@ -122,7 +313,11 @@ public class EventEditActivity extends AppCompatActivity {
                     for (EventCategoryDTO c : data) categoryNameAdapter.add(c.name);
                 }
                 categoryNameAdapter.notifyDataSetChanged();
-                syncCategory();
+
+                if (loaded != null) syncCategoryById(loaded.categoryId);
+
+            } else if (state instanceof ResultState.Error) {
+                reject(((ResultState.Error<?>) state).message);
             }
         });
 
@@ -133,23 +328,46 @@ public class EventEditActivity extends AppCompatActivity {
 
                 edtTitle.setText(nz(loaded.title));
                 edtDesc.setText(nz(loaded.description));
-                edtLocation.setText(nz(loaded.location));
                 edtBannerUrl.setText(nz(loaded.bannerUrl));
-                edtSurveyUrl.setText(nz(loaded.surveyUrl));
-
-                // ✅ Convert mọi dạng BE trả về -> Date -> UTC Z để submit + VN để display
-                isoStartUtcZ = toUtcZ(loaded.startTime);
-                isoEndUtcZ = toUtcZ(loaded.endTime);
-                isoDeadlineUtcZ = toUtcZ(loaded.registrationDeadline);
-
-                edtStartTime.setText(displayVNFromUtcZ(isoStartUtcZ));
-                edtEndTime.setText(displayVNFromUtcZ(isoEndUtcZ));
-                edtDeadline.setText(displayVNFromUtcZ(isoDeadlineUtcZ));
 
                 edtMaxParticipants.setText(loaded.maxParticipants == null ? "" : String.valueOf(loaded.maxParticipants));
                 edtPointValue.setText(loaded.pointValue == null ? "" : String.valueOf(loaded.pointValue));
 
-                syncCategory();
+                // semester
+                setSemesterSelectionById(loaded.semesterId);
+
+                // category
+                syncCategoryById(loaded.categoryId);
+
+                // time
+                isoStartUtcZ = toUtcZ(loaded.startTime);
+                isoEndUtcZ = toUtcZ(loaded.endTime);
+                isoDeadlineUtcZ = toUtcZ(loaded.registrationDeadline);
+
+                edtStartTime.setText(displayVNFromUtcAny(isoStartUtcZ));
+                edtEndTime.setText(displayVNFromUtcAny(isoEndUtcZ));
+                edtDeadline.setText(displayVNFromUtcAny(isoDeadlineUtcZ));
+
+                // mode
+                String mode = (loaded.eventMode == null || loaded.eventMode.trim().isEmpty())
+                        ? MODE_ATTENDANCE
+                        : loaded.eventMode.trim().toUpperCase(Locale.US);
+
+                suppressModeCallback = true;
+                setModeSelection(mode);
+                suppressModeCallback = false;
+
+                applyModeUI(mode, false);
+
+                if (MODE_ONLINE.equals(mode)) {
+                    if (edtLocation != null) edtLocation.setText("");
+                    if (edtSurveyUrl != null) edtSurveyUrl.setText(nz(loaded.surveyUrl));
+                    if (edtSurveySecretCode != null) edtSurveySecretCode.setText(nz(loaded.surveySecretCode));
+                } else {
+                    if (edtLocation != null) edtLocation.setText(nz(loaded.location));
+                    if (edtSurveyUrl != null) edtSurveyUrl.setText("");
+                    if (edtSurveySecretCode != null) edtSurveySecretCode.setText("");
+                }
 
             } else if (state instanceof ResultState.Error) {
                 reject(((ResultState.Error<?>) state).message);
@@ -161,7 +379,7 @@ public class EventEditActivity extends AppCompatActivity {
                 btnSave.setEnabled(false);
             } else if (state instanceof ResultState.Success) {
                 btnSave.setEnabled(true);
-                toast("Cập nhật thành công");
+                toast("Cập nhật event thành công");
                 finish();
             } else if (state instanceof ResultState.Error) {
                 btnSave.setEnabled(true);
@@ -170,28 +388,14 @@ public class EventEditActivity extends AppCompatActivity {
         });
     }
 
-    private void syncCategory() {
-        if (loaded == null || loaded.categoryId == null) return;
-        if (categoryList.isEmpty()) return;
-
-        for (int i = 0; i < categoryList.size(); i++) {
-            if (categoryList.get(i).id != null && categoryList.get(i).id.equals(loaded.categoryId)) {
-                spCategory.setSelection(i);
-                break;
-            }
-        }
-    }
+    // ================= SUBMIT UPDATE =================
 
     private void submitUpdate() {
-        String title = edtTitle.getText().toString().trim();
-        if (title.isEmpty()) {
-            reject("Tiêu đề không được rỗng");
-            return;
-        }
-        if (categoryList.isEmpty()) {
-            reject("Chưa có loại sự kiện (category)");
-            return;
-        }
+        String title = safeText(edtTitle);
+        if (title.isEmpty()) { reject("Tiêu đề không được rỗng"); return; }
+
+        if (categoryList.isEmpty()) { reject("Chưa có loại sự kiện (category)"); return; }
+
         if (TextUtils.isEmpty(isoStartUtcZ) || TextUtils.isEmpty(isoEndUtcZ)) {
             reject("Vui lòng chọn thời gian bắt đầu và kết thúc");
             return;
@@ -200,53 +404,77 @@ public class EventEditActivity extends AppCompatActivity {
 
         if (!validateTimesUtc(isoStartUtcZ, isoEndUtcZ, isoDeadlineUtcZ)) return;
 
+        String mode = getSelectedModeValue();
+
+        if (MODE_ATTENDANCE.equals(mode)) {
+            if (safeText(edtLocation).isEmpty()) {
+                reject("Trực tiếp thì phải nhập địa điểm");
+                return;
+            }
+        }
+
         String banner = normalizeOptionalUrl(edtBannerUrl);
         if (banner == null) return;
 
-        String survey = normalizeOptionalUrl(edtSurveyUrl);
-        if (survey == null) return;
-
-        Integer maxP = parseIntOrNull(edtMaxParticipants.getText().toString().trim(), "Số lượng tối đa");
+        Integer maxP = parseNonNegativeIntOrNull(safeText(edtMaxParticipants), "Số lượng tối đa");
         if (maxP == Integer.MIN_VALUE) return;
 
-        Integer pointValue = parseIntOrNull(edtPointValue.getText().toString().trim(), "Điểm");
+        Integer pointValue = parseNonNegativeIntOrNull(safeText(edtPointValue), "Điểm");
         if (pointValue == Integer.MIN_VALUE) return;
 
         int pos = spCategory.getSelectedItemPosition();
+        if (pos < 0 || pos >= categoryList.size()) { reject("Chọn loại sự kiện không hợp lệ"); return; }
         Long categoryId = categoryList.get(pos).id;
 
         EventRequest req = new EventRequest();
-        req.semesterId = (loaded != null && loaded.semesterId != null) ? loaded.semesterId : 1L;
+        req.semesterId = getSelectedSemesterId();
         req.categoryId = categoryId;
 
         req.title = title;
-        req.description = edtDesc.getText().toString().trim();
-        req.location = edtLocation.getText().toString().trim();
+        req.description = safeText(edtDesc);
+
         req.bannerUrl = banner;
 
-        // ✅ SUBMIT UTC Z
         req.startTime = isoStartUtcZ;
         req.endTime = isoEndUtcZ;
         req.registrationDeadline = isoDeadlineUtcZ;
 
         req.maxParticipants = maxP;
-        req.pointTypeId = (loaded != null && loaded.pointTypeId != null) ? loaded.pointTypeId : 1L;
+
+        req.pointTypeId = (loaded != null && loaded.pointTypeId != null) ? loaded.pointTypeId : DEFAULT_POINT_TYPE_ID;
         req.pointValue = (pointValue != null) ? pointValue : 0;
+        req.createdBy = (loaded != null && loaded.createdBy != null) ? loaded.createdBy : DEFAULT_CREATED_BY;
 
-        req.createdBy = (loaded != null && loaded.createdBy != null) ? loaded.createdBy : 1L;
-        req.eventMode = (loaded != null && loaded.eventMode != null) ? loaded.eventMode : "ATTENDANCE";
-        req.surveyUrl = survey;
+        req.eventMode = mode;
 
-        Log.i(TAG, "SUBMIT: deadline=" + isoDeadlineUtcZ + " start=" + isoStartUtcZ + " end=" + isoEndUtcZ);
+        if (MODE_ATTENDANCE.equals(mode)) {
+            req.location = safeText(edtLocation);
+            req.surveyUrl = "";
+            req.surveySecretCode = "";
+        } else {
+            req.location = "";
+
+            String survey = normalizeOptionalUrl(edtSurveyUrl);
+            if (survey == null) return;
+            req.surveyUrl = survey;
+
+            req.surveySecretCode = safeText(edtSurveySecretCode);
+        }
+
+        Log.i(TAG, "UPDATE eventId=" + eventId
+                + " mode=" + mode
+                + " semesterId=" + req.semesterId
+                + " categoryId=" + req.categoryId);
+
         vm.updateEvent(eventId, req);
     }
 
     // ================= VALIDATE =================
 
     private boolean validateTimesUtc(String startZ, String endZ, String deadlineZ) {
-        Date start = parseUtcZ(startZ);
-        Date end = parseUtcZ(endZ);
-        Date deadline = parseUtcZ(deadlineZ);
+        Date start = parseUtcZFlexible(startZ);
+        Date end = parseUtcZFlexible(endZ);
+        Date deadline = parseUtcZFlexible(deadlineZ);
 
         if (start == null || end == null || deadline == null) {
             reject("Thời gian không hợp lệ (format sai)");
@@ -266,20 +494,35 @@ public class EventEditActivity extends AppCompatActivity {
         return true;
     }
 
-    private Date parseUtcZ(String isoZ) {
-        try {
-            SimpleDateFormat in = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
-            in.setLenient(false);
-            in.setTimeZone(UTC_TZ);
-            return in.parse(isoZ);
-        } catch (Exception e) {
-            Log.e(TAG, "Parse UTCZ failed: " + isoZ, e);
-            return null;
+    private Date parseUtcZFlexible(String isoZ) {
+        if (isoZ == null) return null;
+        isoZ = isoZ.trim();
+        if (isoZ.isEmpty()) return null;
+
+        String[] patterns = new String[] {
+                "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        };
+
+        for (String p : patterns) {
+            try {
+                SimpleDateFormat in = new SimpleDateFormat(p, Locale.US);
+                in.setLenient(false);
+                in.setTimeZone(UTC_TZ);
+                Date d = in.parse(isoZ);
+                if (d != null) return d;
+            } catch (Exception ignore) {}
         }
+
+        Log.e(TAG, "Parse UTCZ failed: " + isoZ);
+        return null;
     }
 
+    // ================= URL =================
+
     private String normalizeOptionalUrl(EditText edt) {
-        String raw = edt.getText().toString().trim();
+        if (edt == null) return "";
+        String raw = safeText(edt);
         if (TextUtils.isEmpty(raw)) return "";
 
         String url = raw;
@@ -301,10 +544,10 @@ public class EventEditActivity extends AppCompatActivity {
         }
     }
 
-    // ================= LOAD convert BE -> UTCZ =================
+    // ================= BE time -> UTCZ =================
 
     private String toUtcZ(String isoAny) {
-        Date d = parseIsoSmart(isoAny);
+        Date d = parseIsoSmartAsServerTime(isoAny);
         if (d == null) return "";
 
         SimpleDateFormat out = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
@@ -312,13 +555,10 @@ public class EventEditActivity extends AppCompatActivity {
         return out.format(d);
     }
 
-    // BE có thể trả có Z hoặc không Z
-    private Date parseIsoSmart(String iso) {
+    private Date parseIsoSmartAsServerTime(String iso) {
         if (iso == null) return null;
         iso = iso.trim();
         if (iso.isEmpty()) return null;
-
-        boolean hasZ = iso.endsWith("Z");
 
         String[] patterns = new String[] {
                 "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
@@ -331,8 +571,7 @@ public class EventEditActivity extends AppCompatActivity {
             try {
                 SimpleDateFormat in = new SimpleDateFormat(p, Locale.US);
                 in.setLenient(false);
-                // có Z => UTC, không Z => coi như giờ VN
-                in.setTimeZone(hasZ ? UTC_TZ : VN_TZ);
+                in.setTimeZone(UTC_TZ);
                 Date d = in.parse(iso);
                 if (d != null) return d;
             } catch (Exception ignore) {}
@@ -361,13 +600,15 @@ public class EventEditActivity extends AppCompatActivity {
                             vnCal.set(Calendar.SECOND, 0);
                             vnCal.set(Calendar.MILLISECOND, 0);
 
+                            Date picked = vnCal.getTime();
+
                             SimpleDateFormat display = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
                             display.setTimeZone(VN_TZ);
-                            target.setText(display.format(vnCal.getTime()));
+                            target.setText(display.format(picked));
 
                             SimpleDateFormat iso = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
                             iso.setTimeZone(UTC_TZ);
-                            cb.onPicked(iso.format(vnCal.getTime()));
+                            cb.onPicked(iso.format(picked));
                         },
                         vnCal.get(Calendar.HOUR_OF_DAY),
                         vnCal.get(Calendar.MINUTE),
@@ -379,10 +620,10 @@ public class EventEditActivity extends AppCompatActivity {
         ).show();
     }
 
-    private String displayVNFromUtcZ(String isoZ) {
+    private String displayVNFromUtcAny(String isoZ) {
         if (TextUtils.isEmpty(isoZ)) return "";
-        Date d = parseUtcZ(isoZ);
-        if (d == null) return isoZ;
+        Date d = parseUtcZFlexible(isoZ);
+        if (d == null) return "";
 
         SimpleDateFormat out = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
         out.setTimeZone(VN_TZ);
@@ -393,6 +634,10 @@ public class EventEditActivity extends AppCompatActivity {
 
     private String nz(String s) { return s == null ? "" : s; }
 
+    private String safeText(EditText edt) {
+        return (edt == null || edt.getText() == null) ? "" : edt.getText().toString().trim();
+    }
+
     private void toast(String s) {
         Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
     }
@@ -402,10 +647,12 @@ public class EventEditActivity extends AppCompatActivity {
         toast(msg);
     }
 
-    private Integer parseIntOrNull(String s, String field) {
+    private Integer parseNonNegativeIntOrNull(String s, String field) {
         if (s.isEmpty()) return null;
         try {
-            return Integer.parseInt(s);
+            int v = Integer.parseInt(s);
+            if (v < 0) { reject(field + " phải >= 0"); return Integer.MIN_VALUE; }
+            return v;
         } catch (Exception e) {
             reject(field + " không hợp lệ");
             return Integer.MIN_VALUE;

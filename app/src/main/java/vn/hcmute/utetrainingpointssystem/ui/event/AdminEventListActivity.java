@@ -2,9 +2,9 @@ package vn.hcmute.utetrainingpointssystem.ui.event;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.Spinner;
-import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -31,13 +31,12 @@ public class AdminEventListActivity extends AppCompatActivity {
     private ImageButton btnAdd;
     private Spinner spFilterCategory;
 
-    // filter data
     private final List<EventCategoryDTO> categoryList = new ArrayList<>();
     private final List<String> filterNames = new ArrayList<>();
     private ArrayAdapter<String> filterAdapter;
 
-    // giữ selection để onResume không reset
     private int lastFilterPos = 0;
+    private boolean spinnerInitialized = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,46 +58,39 @@ public class AdminEventListActivity extends AppCompatActivity {
         rv.setLayoutManager(new LinearLayoutManager(this));
         rv.setAdapter(adapter);
 
-        // setup filter spinner
-        filterAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                filterNames
-        );
+        filterAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, filterNames);
         filterAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spFilterCategory.setAdapter(filterAdapter);
 
         spFilterCategory.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
+                // tránh trường hợp onCreate setSelection gây gọi load 2 lần
+                if (!spinnerInitialized) {
+                    spinnerInitialized = true;
+                }
                 lastFilterPos = position;
                 applyFilter(position);
             }
 
-            @Override
-            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
         });
 
         observeVM();
 
-        btnAdd.setOnClickListener(v ->
-                startActivity(new Intent(this, EventCreateActivity.class))
-        );
+        btnAdd.setOnClickListener(v -> startActivity(new Intent(this, EventCreateActivity.class)));
 
-        // load data
-        vm.loadCategories();    // để có filter list
-        vm.loadAllEvents();     // default: all
+        vm.loadCategories();
+        vm.loadAllEvents();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // reload theo filter đang chọn
         applyFilter(lastFilterPos);
     }
 
     private void applyFilter(int position) {
-        // position 0 = Tất cả
         if (position == 0) {
             vm.loadAllEvents();
             return;
@@ -119,26 +111,17 @@ public class AdminEventListActivity extends AppCompatActivity {
 
                 categoryList.clear();
                 filterNames.clear();
-
-                // item đầu: Tất cả
                 filterNames.add("Tất cả");
 
                 if (data != null) {
                     categoryList.addAll(data);
-                    for (EventCategoryDTO c : data) {
-                        filterNames.add(c.name);
-                    }
+                    for (EventCategoryDTO c : data) filterNames.add(c.name);
                 }
 
                 filterAdapter.notifyDataSetChanged();
 
-                // restore selection
-                if (lastFilterPos < filterNames.size()) {
-                    spFilterCategory.setSelection(lastFilterPos);
-                } else {
-                    lastFilterPos = 0;
-                    spFilterCategory.setSelection(0);
-                }
+                if (lastFilterPos < filterNames.size()) spFilterCategory.setSelection(lastFilterPos);
+                else { lastFilterPos = 0; spFilterCategory.setSelection(0); }
 
             } else if (state instanceof ResultState.Error) {
                 Toast.makeText(this, ((ResultState.Error<?>) state).message, Toast.LENGTH_SHORT).show();

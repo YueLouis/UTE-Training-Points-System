@@ -1,91 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#F6F0FF">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <ImageView
-            android:id="@+id/imgBanner"
+        <!-- Banner bo góc -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:scaleType="centerCrop"
-            android:src="@android:color/darker_gray"/>
+            app:cardCornerRadius="14dp"
+            app:cardUseCompatPadding="true"
+            app:cardElevation="2dp">
 
-        <LinearLayout
+            <ImageView
+                android:id="@+id/imgBanner"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@android:color/darker_gray" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- Card nội dung (nền xanh ngọc) -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:orientation="vertical">
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="14dp"
+            app:cardUseCompatPadding="true"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="#39E6E0">
 
-            <TextView
-                android:id="@+id/tvTitle"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Event title"
-                android:textStyle="bold"
-                android:textSize="20sp" />
+                android:orientation="vertical"
+                android:padding="16dp">
 
-            <TextView
-                android:id="@+id/tvStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:paddingTop="6dp"
-                android:paddingBottom="6dp"
-                android:layout_marginTop="8dp"
-                android:text="OPEN"
-                android:textStyle="bold"
-                android:background="@android:drawable/btn_default"
-                android:textSize="12sp" />
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Event title"
+                    android:textStyle="bold"
+                    android:textSize="20sp"
+                    android:textColor="#111" />
 
-            <TextView
-                android:id="@+id/tvRegisterCount"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Đã đăng ký: 0 / ?"
-                android:textStyle="bold"
-                android:textSize="14sp"/>
+                <!-- Status nền xám -->
+                <TextView
+                    android:id="@+id/tvStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:paddingLeft="12dp"
+                    android:paddingRight="12dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"
+                    android:text="OPEN"
+                    android:textStyle="bold"
+                    android:textSize="12sp"
+                    android:textColor="#111"
+                    android:background="@drawable/bg_status_gray" />
 
-            <TextView
-                android:id="@+id/tvTime"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="03/01/2026 21:00 → 03/01/2026 23:00"
-                android:textSize="14sp" />
+                <TextView
+                    android:id="@+id/tvRegisterCount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Đã đăng ký: 0 / ?"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:textColor="#111" />
 
-            <TextView
-                android:id="@+id/tvLocation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="Location"
-                android:textSize="14sp" />
+                <TextView
+                    android:id="@+id/tvTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="03/01/2026 21:00 → 03/01/2026 23:00"
+                    android:textSize="14sp"
+                    android:textColor="#111" />
 
-            <TextView
-                android:id="@+id/tvDesc"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Description"
-                android:textSize="14sp" />
-            <TextView
-                android:id="@+id/tvSurvey"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Survey: https://..."
-                android:textSize="14sp"
-                android:autoLink="web"
-                android:visibility="gone" />
+                <TextView
+                    android:id="@+id/tvLocation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Location"
+                    android:textSize="14sp"
+                    android:textColor="#111" />
 
+                <TextView
+                    android:id="@+id/tvDesc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Description"
+                    android:textSize="14sp"
+                    android:textColor="#111" />
 
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/tvSurvey"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Survey: https://..."
+                    android:textSize="14sp"
+                    android:textColor="#111"
+                    android:autoLink="web"
+                    android:visibility="gone" />
+
+                <!-- Button xanh bo tròn -->
+                <Button
+                    android:id="@+id/btnParticipants"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="16dp"
+                    android:text="Danh sách người tham gia"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    android:background="@drawable/bg_btn_green_round" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
     </LinearLayout>
 </ScrollView>

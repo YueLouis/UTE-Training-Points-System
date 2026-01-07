@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import java.io.IOException;
 import java.util.List;
 
 import retrofit2.Call;
@@ -19,7 +20,6 @@ import vn.hcmute.utetrainingpointssystem.network.api.EventApi;
 import vn.hcmute.utetrainingpointssystem.network.api.EventCategoryApi;
 import vn.hcmute.utetrainingpointssystem.network.api.RegistrationApi;
 
-
 public class EventManageViewModel extends ViewModel {
 
     private final EventApi eventApi =
@@ -30,7 +30,6 @@ public class EventManageViewModel extends ViewModel {
 
     private final RegistrationApi registrationApi =
             RetrofitClient.getClient().create(RegistrationApi.class);
-
 
     // ====== STATES ======
     private final MutableLiveData<ResultState<List<EventDTO>>> eventsState = new MutableLiveData<>();
@@ -45,10 +44,17 @@ public class EventManageViewModel extends ViewModel {
     private final MutableLiveData<ResultState<Void>> actionState = new MutableLiveData<>();
     public LiveData<ResultState<Void>> getActionState() { return actionState; }
 
-    // ====== COUNT REGISTERED STATE ======
     private final MutableLiveData<ResultState<Integer>> registrationCountState = new MutableLiveData<>();
     public LiveData<ResultState<Integer>> getRegistrationCountState() { return registrationCountState; }
 
+    private final MutableLiveData<ResultState<List<EventRegistrationDTO>>> registrationsState = new MutableLiveData<>();
+    public LiveData<ResultState<List<EventRegistrationDTO>>> getRegistrationsState() { return registrationsState; }
+
+    private final MutableLiveData<ResultState<EventRegistrationDTO>> checkInState = new MutableLiveData<>();
+    public LiveData<ResultState<EventRegistrationDTO>> getCheckInState() { return checkInState; }
+
+    private final MutableLiveData<ResultState<EventRegistrationDTO>> checkOutState = new MutableLiveData<>();
+    public LiveData<ResultState<EventRegistrationDTO>> getCheckOutState() { return checkOutState; }
 
     // ===== FILTER =====
     public void loadEventsByCategory(Long categoryId) {
@@ -65,10 +71,9 @@ public class EventManageViewModel extends ViewModel {
                 if (response.isSuccessful()) {
                     eventsState.setValue(new ResultState.Success<>(response.body()));
                 } else {
-                    eventsState.setValue(new ResultState.Error<>("Load by category failed: " + response.code()));
+                    eventsState.setValue(new ResultState.Error<>(readError(response, "Load by category failed")));
                 }
             }
-
             @Override
             public void onFailure(Call<List<EventDTO>> call, Throwable t) {
                 eventsState.setValue(new ResultState.Error<>(t.getMessage()));
@@ -76,21 +81,18 @@ public class EventManageViewModel extends ViewModel {
         });
     }
 
-    // ====== LOAD EVENTS LIST  ======
     public void loadAllEvents() {
         eventsState.setValue(new ResultState.Loading<>());
 
-        // studentId query: admin thường truyền null để lấy all (nếu BE cho)
         eventApi.getAllEvents(null).enqueue(new Callback<List<EventDTO>>() {
             @Override
             public void onResponse(Call<List<EventDTO>> call, Response<List<EventDTO>> response) {
                 if (response.isSuccessful()) {
                     eventsState.setValue(new ResultState.Success<>(response.body()));
                 } else {
-                    eventsState.setValue(new ResultState.Error<>("Load events failed: " + response.code()));
+                    eventsState.setValue(new ResultState.Error<>(readError(response, "Load events failed")));
                 }
             }
-
             @Override
             public void onFailure(Call<List<EventDTO>> call, Throwable t) {
                 eventsState.setValue(new ResultState.Error<>(t.getMessage()));
@@ -98,7 +100,6 @@ public class EventManageViewModel extends ViewModel {
         });
     }
 
-    // ====== LOAD CATEGORIES (for spinner) ======
     public void loadCategories() {
         categoriesState.setValue(new ResultState.Loading<>());
 
@@ -108,10 +109,9 @@ public class EventManageViewModel extends ViewModel {
                 if (response.isSuccessful()) {
                     categoriesState.setValue(new ResultState.Success<>(response.body()));
                 } else {
-                    categoriesState.setValue(new ResultState.Error<>("Load categories failed: " + response.code()));
+                    categoriesState.setValue(new ResultState.Error<>(readError(response, "Load categories failed")));
                 }
             }
-
             @Override
             public void onFailure(Call<List<EventCategoryDTO>> call, Throwable t) {
                 categoriesState.setValue(new ResultState.Error<>(t.getMessage()));
@@ -119,7 +119,6 @@ public class EventManageViewModel extends ViewModel {
         });
     }
 
-    // ====== LOAD EVENT DETAIL (for detail/edit) ======
     public void loadEventById(Long id) {
         eventDetailState.setValue(new ResultState.Loading<>());
 
@@ -129,10 +128,9 @@ public class EventManageViewModel extends ViewModel {
                 if (response.isSuccessful()) {
                     eventDetailState.setValue(new ResultState.Success<>(response.body()));
                 } else {
-                    eventDetailState.setValue(new ResultState.Error<>("Load event failed: " + response.code()));
+                    eventDetailState.setValue(new ResultState.Error<>(readError(response, "Load event failed")));
                 }
             }
-
             @Override
             public void onFailure(Call<EventDTO> call, Throwable t) {
                 eventDetailState.setValue(new ResultState.Error<>(t.getMessage()));
@@ -140,8 +138,65 @@ public class EventManageViewModel extends ViewModel {
         });
     }
 
+    public void loadRegistrationsByEvent(Long eventId) {
+        registrationsState.setValue(new ResultState.Loading<>());
 
-    // ====== COUNT REGISTERED ======
+        registrationApi.getByEvent(eventId).enqueue(new Callback<List<EventRegistrationDTO>>() {
+            @Override
+            public void onResponse(Call<List<EventRegistrationDTO>> call, Response<List<EventRegistrationDTO>> response) {
+                if (response.isSuccessful()) {
+                    registrationsState.setValue(new ResultState.Success<>(response.body()));
+                } else {
+                    registrationsState.setValue(new ResultState.Error<>(readError(response, "Load registrations failed")));
+                }
+            }
+            @Override
+            public void onFailure(Call<List<EventRegistrationDTO>> call, Throwable t) {
+                registrationsState.setValue(new ResultState.Error<>(t.getMessage()));
+            }
+        });
+    }
+
+    // ====== CHECK-IN ======
+    public void checkIn(long eventId, long studentId, long adminId) {
+        checkInState.postValue(new ResultState.Loading<>());
+
+        registrationApi.checkin(eventId, studentId, adminId).enqueue(new Callback<EventRegistrationDTO>() {
+            @Override
+            public void onResponse(Call<EventRegistrationDTO> call, Response<EventRegistrationDTO> res) {
+                if (res.isSuccessful()) {
+                    checkInState.postValue(new ResultState.Success<>(res.body()));
+                } else {
+                    checkInState.postValue(new ResultState.Error<>(readError(res, "Check-in failed")));
+                }
+            }
+            @Override
+            public void onFailure(Call<EventRegistrationDTO> call, Throwable t) {
+                checkInState.postValue(new ResultState.Error<>(t.getMessage()));
+            }
+        });
+    }
+
+    // ====== CHECK-OUT ======
+    public void checkOut(long eventId, long studentId, long adminId) {
+        checkOutState.postValue(new ResultState.Loading<>());
+
+        registrationApi.checkout(eventId, studentId, adminId).enqueue(new Callback<EventRegistrationDTO>() {
+            @Override
+            public void onResponse(Call<EventRegistrationDTO> call, Response<EventRegistrationDTO> res) {
+                if (res.isSuccessful()) {
+                    checkOutState.postValue(new ResultState.Success<>(res.body()));
+                } else {
+                    checkOutState.postValue(new ResultState.Error<>(readError(res, "Check-out failed")));
+                }
+            }
+            @Override
+            public void onFailure(Call<EventRegistrationDTO> call, Throwable t) {
+                checkOutState.postValue(new ResultState.Error<>(t.getMessage()));
+            }
+        });
+    }
+
     public void loadRegistrationCount(Long eventId) {
         registrationCountState.setValue(new ResultState.Loading<>());
 
@@ -153,17 +208,16 @@ public class EventManageViewModel extends ViewModel {
                     int count = (list == null) ? 0 : list.size();
                     registrationCountState.setValue(new ResultState.Success<>(count));
                 } else {
-                    registrationCountState.setValue(new ResultState.Error<>("Load registrations failed: " + response.code()));
+                    registrationCountState.setValue(new ResultState.Error<>(readError(response, "Load registrations failed")));
                 }
             }
-
             @Override
             public void onFailure(Call<List<EventRegistrationDTO>> call, Throwable t) {
                 registrationCountState.setValue(new ResultState.Error<>(t.getMessage()));
             }
         });
     }
-    // ====== CREATE ======
+
     public void createEvent(EventRequest body) {
         actionState.setValue(new ResultState.Loading<>());
 
@@ -173,10 +227,9 @@ public class EventManageViewModel extends ViewModel {
                 if (response.isSuccessful()) {
                     actionState.setValue(new ResultState.Success<>(null));
                 } else {
-                    actionState.setValue(new ResultState.Error<>("Create failed: " + response.code()));
+                    actionState.setValue(new ResultState.Error<>(readError(response, "Create failed")));
                 }
             }
-
             @Override
             public void onFailure(Call<EventDTO> call, Throwable t) {
                 actionState.setValue(new ResultState.Error<>(t.getMessage()));
@@ -184,7 +237,6 @@ public class EventManageViewModel extends ViewModel {
         });
     }
 
-    // ====== UPDATE ======
     public void updateEvent(Long id, EventRequest body) {
         actionState.setValue(new ResultState.Loading<>());
 
@@ -194,10 +246,9 @@ public class EventManageViewModel extends ViewModel {
                 if (response.isSuccessful()) {
                     actionState.setValue(new ResultState.Success<>(null));
                 } else {
-                    actionState.setValue(new ResultState.Error<>("Update failed: " + response.code()));
+                    actionState.setValue(new ResultState.Error<>(readError(response, "Update failed")));
                 }
             }
-
             @Override
             public void onFailure(Call<EventDTO> call, Throwable t) {
                 actionState.setValue(new ResultState.Error<>(t.getMessage()));
@@ -205,7 +256,6 @@ public class EventManageViewModel extends ViewModel {
         });
     }
 
-    // ====== CLOSE ======
     public void closeEvent(Long id) {
         actionState.setValue(new ResultState.Loading<>());
 
@@ -215,10 +265,9 @@ public class EventManageViewModel extends ViewModel {
                 if (response.isSuccessful()) {
                     actionState.setValue(new ResultState.Success<>(null));
                 } else {
-                    actionState.setValue(new ResultState.Error<>("Close failed: " + response.code()));
+                    actionState.setValue(new ResultState.Error<>(readError(response, "Close failed")));
                 }
             }
-
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
                 actionState.setValue(new ResultState.Error<>(t.getMessage()));
@@ -226,7 +275,6 @@ public class EventManageViewModel extends ViewModel {
         });
     }
 
-    // ====== DELETE ======
     public void deleteEvent(Long id) {
         actionState.setValue(new ResultState.Loading<>());
 
@@ -236,14 +284,27 @@ public class EventManageViewModel extends ViewModel {
                 if (response.isSuccessful()) {
                     actionState.setValue(new ResultState.Success<>(null));
                 } else {
-                    actionState.setValue(new ResultState.Error<>("Delete failed: " + response.code()));
+                    actionState.setValue(new ResultState.Error<>(readError(response, "Delete failed")));
                 }
             }
-
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
                 actionState.setValue(new ResultState.Error<>(t.getMessage()));
             }
         });
+    }
+
+    // ========= helper: đọc message từ errorBody =========
+    private <T> String readError(Response<T> res, String fallbackPrefix) {
+        String msg = fallbackPrefix + ": " + res.code();
+        try {
+            if (res.errorBody() != null) {
+                String body = res.errorBody().string();
+                if (body != null && !body.trim().isEmpty()) {
+                    msg = body;
+                }
+            }
+        } catch (IOException ignore) {}
+        return msg;
     }
 }
