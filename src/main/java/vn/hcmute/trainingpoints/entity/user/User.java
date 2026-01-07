@@ -40,6 +40,9 @@ public class User {
     @Column(name = "faculty", length = 100)
     private String faculty;
 
+    @Column(name = "avatar_url", length = 255)
+    private String avatarUrl;
+
     @Column(name = "status")
     private Boolean status;   // 1 = active
 

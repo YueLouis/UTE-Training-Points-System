@@ -14,5 +14,6 @@ public class AuthUser {
     private String role;
     private String className;
     private String faculty;
+    private String avatarUrl;
     private Boolean status;
 }

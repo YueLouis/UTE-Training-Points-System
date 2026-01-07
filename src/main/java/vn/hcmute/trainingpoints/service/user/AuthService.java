@@ -69,6 +69,7 @@ public class AuthService {
                 .role(user.getRole())
                 .className(user.getClassName())
                 .faculty(user.getFaculty())
+                .avatarUrl(user.getAvatarUrl())
                 .status(user.getStatus())
                 .build();
 
