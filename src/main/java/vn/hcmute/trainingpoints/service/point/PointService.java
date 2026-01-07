@@ -95,11 +95,14 @@ public class PointService {
 
         String code = pt.getCode();
         if ("DRL".equalsIgnoreCase(code)) {
-            summary.setTotalDrl(safe(summary.getTotalDrl()) + delta);
+            int newPoints = safe(summary.getTotalDrl()) + delta;
+            summary.setTotalDrl(Math.min(newPoints, 100)); // Cap max 100
         } else if ("CTXH".equalsIgnoreCase(code)) {
-            summary.setTotalCtxh(safe(summary.getTotalCtxh()) + delta);
+            int newPoints = safe(summary.getTotalCtxh()) + delta;
+            summary.setTotalCtxh(Math.min(newPoints, 40)); // Cap max 40
         } else if ("CDDN".equalsIgnoreCase(code) || "CDNN".equalsIgnoreCase(code)) {
-            summary.setTotalCdnn(safe(summary.getTotalCdnn()) + delta);
+            int newPoints = safe(summary.getTotalCdnn()) + delta;
+            summary.setTotalCdnn(Math.min(newPoints, 8)); // Cap max 8
         } else {
             throw new RuntimeException("Unknown point type code: " + code);
         }

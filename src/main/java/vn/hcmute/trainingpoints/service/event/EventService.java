@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.Sort;
 import vn.hcmute.trainingpoints.dto.event.EventComputedStatus;
 import vn.hcmute.trainingpoints.dto.event.EventDTO;
 import vn.hcmute.trainingpoints.dto.event.EventRequest;
@@ -51,7 +52,8 @@ public class EventService {
             return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
 
-        List<Event> events = eventRepository.findAll(spec);
+        // Sắp xếp theo ID giảm dần (Mới nhất hiện lên đầu)
+        List<Event> events = eventRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "id"));
         
         // Nếu có studentId -> map info đã đăng ký
         final Map<Long, EventRegistration> regMap;
