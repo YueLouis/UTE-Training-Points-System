@@ -62,7 +62,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
+        String origins = System.getenv().getOrDefault("CORS_ALLOWED_ORIGINS", "*");
+        configuration.setAllowedOriginPatterns(Arrays.asList(origins.split(",")));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -77,4 +78,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
-
+// TODO: Move to scoped RBAC: check permissions via user_roles_scoped/role_permissions instead of users.role

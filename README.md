@@ -44,7 +44,7 @@ open http://localhost:8080/swagger-ui/index.html
 
 ### For Students
 - ✅ Đăng nhập đa phương thức (MSSV / Email / SĐT)
-- ✅ Khôi phục mật khẩu qua OTP Email
+- ✅ Khôi phục mật khẩu qua Email Link (token-based, industry standard)
 - ✅ Đăng ký sự kiện online & offline
 - ✅ Hoàn thành khảo sát với mã bí mật (chống gian lận)
 - ✅ Xem bảng điểm & xếp loại tự động
@@ -71,22 +71,25 @@ open http://localhost:8080/swagger-ui/index.html
 
 ## 📊 Database Schema
 
-10 core tables:
+20+ tables including:
 - `users` - Sinh viên & Admin
 - `events` - Sự kiện (online/offline)
 - `event_registrations` - Đăng ký & điểm danh
 - `point_transactions` - Lịch sử cộng điểm
-- `student_semester_summary` - Tổng kết & xếp loại
+- `student_semester_summary` - Tổng kết & xếp loại theo kỳ
+- `student_points_cumulative` - CTXH/CDNN tích lũy (max 40/8)
+- `password_reset_tokens` - Token-based password reset
+- `org_units` - Cấu trúc tổ chức (12 khoa, viện, phòng, đoàn, CLB)
+- `roles`, `permissions`, `user_roles_scoped` - RBAC system
 - `notifications` - Thông báo
-- `password_reset_codes` - Quản lý OTP
-- _+ 3 danh mục phụ_
+- _+ other supporting tables_
 
 ## 🔐 Security
 
 - **Password**: BCrypt hashing (không lưu plaintext)
-- **OTP**: SHA-256 hashed, 120s expiration, one-time use
-- **Auth**: Token-based (JWT trong production)
-- **RBAC**: `STUDENT` vs `ADMIN` permissions
+- **Password Reset**: Token/link via email (SHA-256 hashed, 15min expiration, one-time use)
+- **Auth**: JWT access token (30min) + refresh token (7 days)
+- **RBAC**: `STUDENT` vs `ADMIN` permissions (expanding to scoped org_units)
 
 ## 🌍 Deployment
 
@@ -107,7 +110,9 @@ MAIL_PASSWORD=your_app_password
 | Module | Endpoint | Method | Description |
 |--------|----------|--------|-------------|
 | Auth | `/api/auth/login` | POST | Đăng nhập |
-| Auth | `/api/auth/forgot-password/*` | POST | Quy trình OTP 3 bước |
+| Auth | `/api/auth/refresh` | POST | Refresh JWT token |
+| Auth | `/api/auth/forgot-password` | POST | Request reset link (token via email) |
+| Auth | `/api/reset-password` | POST | Reset password with token from link |
 | Events | `/api/events` | GET/POST | Danh sách & tạo sự kiện |
 | Registration | `/api/event-registrations` | POST/PUT | Đăng ký & check-in/out |
 | Points | `/api/points/summary/{studentId}` | GET | Bảng điểm & xếp loại |
@@ -153,3 +158,70 @@ Developed by UTE Training Points System Team
 - 📖 [Full Documentation](docs/DETAILS.md)
 - 🚂 [Railway Deployment](https://railway.com/invite/C8qZFcVV4S6)
 
+---
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+Set these in Railway or local `.env`:
+
+```bash
+# Database
+DATABASE_URL=jdbc:mysql://host:port/database
+DB_USER=root
+DB_PASSWORD=your_password
+
+# JWT
+JWT_SECRET=your_long_random_secret_at_least_32_characters
+
+# Mail (for password reset)
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your_email@gmail.com
+MAIL_PASSWORD=your_app_password
+
+# Password Reset
+RESET_PEPPER=your_pepper_secret
+RESET_FRONTEND_URL=https://your-frontend.com/reset-password
+
+# CORS
+CORS_ALLOWED_ORIGINS=https://your-frontend.com
+
+# Profile
+SPRING_PROFILES_ACTIVE=production
+```
+
+### P0 Production Safety Checklist
+
+- ⚠️ **Rotate ALL secrets** if ever committed to Git (DB password, JWT secret, mail password)
+- ⚠️ Set `CORS_ALLOWED_ORIGINS` to your FE domain (not `*` in production)
+- ⚠️ Verify `server.error.include-stacktrace=never` in production profile
+- ⚠️ Set strong `JWT_SECRET` (min 32 chars) and `RESET_PEPPER`
+
+### How to Run
+
+**Development:**
+```bash
+./mvnw spring-boot:run
+```
+
+**Production (Railway):**
+- Set all environment variables above
+- Push to GitHub → Railway auto-deploys
+- Flyway migrations (V1-V7) run automatically
+
+### Password Reset Flow
+
+**Token/Link Method (Current):**
+1. User requests reset → receives email with link: `https://frontend/reset-password?token=ABC123`
+2. User clicks link → enters new password → frontend sends token + password to `/api/reset-password`
+3. Backend validates token (not used, not expired) → updates password → marks token as used
+
+**Security:**
+- Token: 256-bit random, SHA-256 hashed with server pepper
+- Expiration: 15 minutes
+- One-time use only
+- Email never reveals if account exists (always returns 200 OK)
+
+---
