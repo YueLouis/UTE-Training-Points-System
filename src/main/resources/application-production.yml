@@ -1,65 +1,65 @@
-# Production Profile
-spring.config.activate.on-profile=production
+spring:
+  config:
+    activate:
+      on-profile: production
+  datasource:
+    url: ${DATABASE_URL:jdbc:mysql://localhost:3306/railway}
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:password}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
-# =========================
-# DATASOURCE (Railway MySQL - Use environment variables)
-# =========================
-spring.datasource.url=${DATABASE_URL:jdbc:mysql://localhost:3306/railway}
-spring.datasource.username=${DB_USER:root}
-spring.datasource.password=${DB_PASSWORD:password}
+logging:
+  level:
+    root: WARN
+    vn.hcmute.trainingpoints: INFO
+    org.springframework.web: INFO
+    org.hibernate: WARN
 
-# =========================
-# JPA / HIBERNATE
-# =========================
-spring.jpa.hibernate.ddl-auto=none
-spring.jpa.show-sql=false
-spring.jpa.properties.hibernate.format_sql=false
+jwt:
+  secret: ${JWT_SECRET}
+  access:
+    expiration: ${JWT_ACCESS_EXPIRATION:1800000}
+  refresh:
+    expiration: ${JWT_REFRESH_EXPIRATION:604800000}
 
-# =========================
-# FLYWAY
-# =========================
-spring.flyway.enabled=true
-spring.flyway.baseline-on-migrate=true
+app:
+  reset:
+    expireSeconds: ${OTP_EXPIRATION_SECONDS:120}
+  mail:
+    from: ${MAIL_USERNAME}
 
-# =========================
-# LOGGING (Minimal for production)
-# =========================
-logging.level.root=WARN
-logging.level.vn.hcmute.trainingpoints=INFO
-logging.level.org.springframework.web=INFO
-logging.level.org.hibernate=WARN
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
 
-# =========================
-# JWT
-# =========================
-jwt.secret=${JWT_SECRET}
-jwt.access.expiration=${JWT_ACCESS_EXPIRATION:1800000}
-jwt.refresh.expiration=${JWT_REFRESH_EXPIRATION:604800000}
-
-# =========================
-# MAIL
-# =========================
-spring.mail.host=${MAIL_HOST:smtp.gmail.com}
-spring.mail.port=${MAIL_PORT:587}
-spring.mail.username=${MAIL_USERNAME}
-spring.mail.password=${MAIL_PASSWORD}
-spring.mail.properties.mail.smtp.auth=true
-spring.mail.properties.mail.smtp.starttls.enable=true
-
-app.reset.expireSeconds=${OTP_EXPIRATION_SECONDS:120}
-app.mail.from=${MAIL_USERNAME}
-
-# =========================
-# ACTUATOR
-# =========================
-management.endpoints.web.exposure.include=health,info
-management.endpoint.health.show-details=never
-
-# =========================
-# SERVER
-# =========================
-server.port=${PORT:8080}
-server.error.include-message=always
-server.error.include-binding-errors=never
-server.error.include-stacktrace=never
-
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: never
+    include-stacktrace: never
