@@ -10,3 +10,4 @@ import lombok.*;
 public class SimpleMessageResponse {
     private String message;
 }
+

@@ -1,10 +1,12 @@
 package vn.hcmute.trainingpoints.dto.registration;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class EventRegistrationRequest {
     private Long eventId;
     private Long studentId;

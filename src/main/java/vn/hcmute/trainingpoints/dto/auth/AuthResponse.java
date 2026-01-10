@@ -6,6 +6,7 @@ import lombok.*;
 @NoArgsConstructor @AllArgsConstructor
 @Builder
 public class AuthResponse {
-    private String token; // token giả
+    private String token; // JWT access token
+    private String refreshToken; // JWT refresh token
     private AuthUser user;
 }
