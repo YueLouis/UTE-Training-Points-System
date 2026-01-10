@@ -1,11 +1,18 @@
 # 🚂 RAILWAY DEPLOYMENT - QUICK GUIDE
 
+## ⚠️ **RAILWAY BLOCKS SMTP!**
+Railway Free/Hobby plans **block ports 465/587** → Gmail SMTP không hoạt động!  
+✅ **Giải pháp:** Dùng **Resend API** (HTTPS, port 443)
+
+---
+
 ## ✅ **CHECKLIST BIẾN CẦN SET**
 
 ### **Bắt buộc (Must Have)**
 - ✅ `SPRING_PROFILES_ACTIVE=production`
 - ✅ `JWT_SECRET` (64 ký tự random)
-- ✅ `MAIL_USERNAME` + `MAIL_PASSWORD` (Gmail App Password)
+- ✅ `RESEND_API_KEY` (từ resend.com)
+- ✅ `MAIL_FROM` (email gửi)
 - ✅ `RESET_PEPPER` (64 ký tự random)
 - ✅ `RESET_FRONTEND_URL` (URL frontend)
 - ✅ `CORS_ALLOWED_ORIGINS` (domain frontend)
@@ -27,11 +34,9 @@ SPRING_PROFILES_ACTIVE=production
 # JWT (PHẢI ĐỔI thành chuỗi random 64 ký tự)
 JWT_SECRET=UTE2026_Training_Points_JWT_Secret_CHANGE_THIS_abc123xyz789def456ghi
 
-# Mail Gmail (PHẢI ĐỔI thành email + app password của em)
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=phttrongtin.nguyen@gmail.com
-MAIL_PASSWORD=xxxx xxxx xxxx xxxx
+# Email (Resend API - KHÔNG phải Gmail SMTP)
+RESEND_API_KEY=re_xxxxxxxxxxxxx
+MAIL_FROM=onboarding@resend.dev
 
 # Reset Password (PHẢI ĐỔI pepper thành random 64 ký tự, URL thành frontend URL)
 RESET_PEPPER=UTE_Reset_Pepper_CHANGE_THIS_def456uvw789
@@ -63,25 +68,46 @@ python -c "import secrets; print(secrets.token_urlsafe(48))"
 
 ---
 
-## 📧 **CÁCH LẤY GMAIL APP PASSWORD**
+## 📧 **CÁCH LẤY RESEND API KEY**
 
-### **Bước 1: Bật 2-Step Verification**
-1. Vào https://myaccount.google.com/security
-2. Tìm "2-Step Verification"
-3. Bật (nếu chưa bật)
+⚠️ **Quan Trọng:** Railway **block SMTP** (Gmail không hoạt động trên Free/Hobby plan)  
+✅ **Giải pháp:** Dùng Resend API (HTTPS)
 
-### **Bước 2: Tạo App Password**
-1. Vào https://myaccount.google.com/apppasswords
-2. Chọn:
-   - **App:** Mail
-   - **Device:** Other (Custom name) → nhập "UTE Railway Backend"
-3. Click "Generate"
-4. Copy password 16 ký tự (dạng: `abcd efgh ijkl mnop`)
-5. Paste vào `MAIL_PASSWORD` trên Railway
+### **Bước 1: Đăng Ký Resend (Miễn Phí)**
+1. Vào https://resend.com/signup
+2. Đăng ký bằng email + password
+3. Verify email (check inbox)
 
-⚠️ **Lưu ý:** 
-- Dùng **App Password**, KHÔNG phải password Gmail thường
-- Mỗi app password chỉ hiện 1 lần, nếu mất phải tạo lại
+**Free Plan:**
+- ✅ 100 emails/day
+- ✅ 3,000 emails/month
+- ✅ Đủ cho demo/test
+
+### **Bước 2: Lấy API Key**
+1. Login: https://resend.com/login
+2. Vào: https://resend.com/api-keys
+3. Click: "Create API Key"
+4. Name: "UTE Training Points Backend"
+5. Permissions: "Sending Access"
+6. Click "Create" → **Copy API key** (dạng: `re_xxxxxxxxxxxxx`)
+
+⚠️ **Lưu ý:** API key chỉ hiện 1 lần! Lưu lại ngay.
+
+### **Bước 3: Chọn Sender Email**
+
+**Option 1: Dùng Default (Nhanh Nhất)**
+```
+MAIL_FROM=onboarding@resend.dev
+```
+✅ Không cần verify  
+⚠️ Email sẽ hiện "from: onboarding@resend.dev"
+
+**Option 2: Verify Email Cá Nhân**
+1. Vào: https://resend.com/domains
+2. Click: "Add Domain" → "Single Sender"
+3. Nhập: `phttrongtin.nguyen@gmail.com`
+4. Check inbox → Click verify link
+5. Done! Giờ set: `MAIL_FROM=phttrongtin.nguyen@gmail.com`
 
 ---
 
@@ -224,10 +250,8 @@ Railway → Variables → Update CORS_ALLOWED_ORIGINS
 |------|------------|----------|-------|
 | `SPRING_PROFILES_ACTIVE` | `production` | ✅ | Manual |
 | `JWT_SECRET` | `64-char random` | ✅ | Manual |
-| `MAIL_HOST` | `smtp.gmail.com` | ✅ | Manual |
-| `MAIL_PORT` | `587` | ✅ | Manual |
-| `MAIL_USERNAME` | `your@gmail.com` | ✅ | Manual |
-| `MAIL_PASSWORD` | `app password` | ✅ | Manual |
+| `RESEND_API_KEY` | `re_xxxxx` | ✅ | Manual |
+| `MAIL_FROM` | `onboarding@resend.dev` | ✅ | Manual |
 | `RESET_PEPPER` | `64-char random` | ✅ | Manual |
 | `RESET_TOKEN_EXPIRY` | `15` | ⚪ Optional | Manual |
 | `RESET_FRONTEND_URL` | `https://frontend/reset` | ✅ | Manual |
@@ -243,16 +267,24 @@ Railway → Variables → Update CORS_ALLOWED_ORIGINS
 
 ## 🎯 **TÓM TẮT NHANH**
 
-**Em chỉ cần set 7 biến này trên Railway:**
+**Em chỉ cần set 6 biến này trên Railway:**
 1. ✅ `SPRING_PROFILES_ACTIVE=production`
 2. ✅ `JWT_SECRET=<64-char-random>`
-3. ✅ `MAIL_USERNAME=<your-gmail>`
-4. ✅ `MAIL_PASSWORD=<app-password>`
+3. ✅ `RESEND_API_KEY=re_xxxxx` (từ https://resend.com/api-keys)
+4. ✅ `MAIL_FROM=onboarding@resend.dev`
 5. ✅ `RESET_PEPPER=<64-char-random>`
 6. ✅ `RESET_FRONTEND_URL=<frontend-url>`
 7. ✅ `CORS_ALLOWED_ORIGINS=<frontend-domain>`
 
 **Railway tự động lo:**
+- ⚪ MySQL credentials (MYSQL*)
+- ⚪ Port (PORT)
+
+**⚠️ KHÔNG dùng Gmail SMTP (bị Railway block):**
+- ❌ ~~MAIL_HOST~~
+- ❌ ~~MAIL_PORT~~
+- ❌ ~~MAIL_USERNAME~~
+- ❌ ~~MAIL_PASSWORD~~
 - ⚪ MySQL credentials (MYSQL*)
 - ⚪ Port (PORT)
 
