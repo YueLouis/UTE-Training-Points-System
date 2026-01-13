@@ -27,8 +27,10 @@ logging:
   level:
     root: WARN
     vn.hcmute.trainingpoints: INFO
-    org.springframework.web: INFO
+    org.springframework.web: WARN
+    org.springframework.security: WARN
     org.hibernate: WARN
+    org.flywaydb: WARN
 
 jwt:
   secret: ${JWT_SECRET:please_set_jwt_secret_in_env}

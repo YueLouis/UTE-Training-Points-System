@@ -81,7 +81,12 @@ public class EventRegistrationService {
     // 1) Đăng ký tham gia sự kiện (cả ATTENDANCE và ONLINE đều dùng được)
     @Transactional
     public EventRegistrationDTO register(EventRegistrationRequest request) {
+        // Xác nhận event tồn tại
         Event event = getEventOrThrow(request.getEventId());
+
+        // Xác nhận student tồn tại
+        User student = userRepository.findById(request.getStudentId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sinh viên không tồn tại"));
 
         if (event.getStatus() == EventStatus.CLOSED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sự kiện đã đóng");
@@ -135,13 +140,6 @@ public class EventRegistrationService {
 
         registration = eventRegistrationRepository.save(registration);
 
-        // Log thông tin để debug lỗi đăng ký
-        System.out.println("[DEBUG] Event ID: " + request.getEventId());
-        System.out.println("[DEBUG] Student ID: " + request.getStudentId());
-        System.out.println("[DEBUG] Event Status: " + event.getStatus());
-        System.out.println("[DEBUG] Registration Deadline: " + event.getRegistrationDeadline());
-        System.out.println("[DEBUG] Max Participants: " + event.getMaxParticipants());
-
         return toDTO(registration);
     }
 
@@ -171,12 +169,17 @@ public class EventRegistrationService {
         User requester = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Người dùng không tồn tại"));
 
-        if (!"ADMIN".equalsIgnoreCase(requester.getRole()) && !reg.getStudentId().equals(userId)) {
+        boolean isAdmin = "ADMIN".equalsIgnoreCase(requester.getRole());
+        boolean isOwner = reg.getStudentId().equals(userId);
+
+        if (!isAdmin && !isOwner) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền hủy đăng ký của người khác");
         }
 
-        if (reg.getStatus() != EventRegistrationStatus.REGISTERED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ có thể hủy khi đang ở trạng thái Đã đăng ký");
+        // Cho phép hủy ở các trạng thái: REGISTERED, CHECKED_IN
+        if (reg.getStatus() != EventRegistrationStatus.REGISTERED &&
+            reg.getStatus() != EventRegistrationStatus.CHECKED_IN) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ có thể hủy khi đang ở trạng thái Đã đăng ký hoặc Đã check-in");
         }
 
         reg.setStatus(EventRegistrationStatus.CANCELLED);
