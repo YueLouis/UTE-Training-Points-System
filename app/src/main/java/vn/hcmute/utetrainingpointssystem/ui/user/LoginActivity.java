@@ -6,16 +6,17 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import vn.hcmute.utetrainingpointssystem.MainActivity;
 import vn.hcmute.utetrainingpointssystem.R;
 import vn.hcmute.utetrainingpointssystem.core.ResultState;
 import vn.hcmute.utetrainingpointssystem.core.TokenManager;
 import vn.hcmute.utetrainingpointssystem.ui.admin.AdminDashboardActivity;
-import vn.hcmute.utetrainingpointssystem.ui.event.EventListActivity;
 import vn.hcmute.utetrainingpointssystem.viewmodel.auth.AuthViewModel;
 
 public class LoginActivity extends AppCompatActivity {
@@ -24,7 +25,8 @@ public class LoginActivity extends AppCompatActivity {
     private AuthViewModel viewModel;
 
     private EditText etUsername, etPassword;
-    private Button btnLogin, btnForgot;
+    private Button btnLogin;
+    private TextView btnForgot;
     private ProgressBar progressBar;
 
     @Override
@@ -34,7 +36,6 @@ public class LoginActivity extends AppCompatActivity {
         tokenManager = new TokenManager(this);
         viewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
-        // Nếu đã có token -> vào dashboard luôn
         if (tokenManager.isLoggedIn()) {
             navigateToDashboard(tokenManager.getRole());
             return;
@@ -69,7 +70,7 @@ public class LoginActivity extends AppCompatActivity {
         if ("ADMIN".equals(role)) {
             startActivity(new Intent(this, AdminDashboardActivity.class));
         } else {
-            startActivity(new Intent(this, EventListActivity.class));
+            startActivity(new Intent(this, MainActivity.class));
         }
         finish();
     }
@@ -82,7 +83,6 @@ public class LoginActivity extends AppCompatActivity {
             } else if (result instanceof ResultState.Success) {
                 progressBar.setVisibility(View.GONE);
                 var auth = ((ResultState.Success<vn.hcmute.utetrainingpointssystem.model.auth.AuthResponse>) result).data;
-                // Lưu token
                 tokenManager.saveAuth(auth.token, auth.user.id, auth.user.role);
                 Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
                 navigateToDashboard(auth.user.role);

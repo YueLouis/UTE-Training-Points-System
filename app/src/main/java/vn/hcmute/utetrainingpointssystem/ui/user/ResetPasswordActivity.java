@@ -53,8 +53,10 @@ public class ResetPasswordActivity extends AppCompatActivity {
         btnConfirm = findViewById(R.id.btnConfirm);
         progressBar = findViewById(R.id.progressBar);
 
-        // Back button
+        // Back button - allow user to go back to OTP screen
         btnBack.setOnClickListener(v -> finish());
+
+        // Note: No need to intercept back press since default behavior is to finish()
 
         // Show/Hide password toggle
         cbShowPassword.setOnCheckedChangeListener((buttonView, isChecked) -> {

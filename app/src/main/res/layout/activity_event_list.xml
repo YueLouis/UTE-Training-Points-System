@@ -1,17 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/background_main"
+    android:orientation="vertical">
 
-    <Button
-        android:id="@+id/btnProfile"
-        android:text="Profile"
+    <!-- Header with Logo and Buttons -->
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:background="@color/white">
 
+        <ImageView
+            android:id="@+id/imgLogo"
+            android:layout_width="80dp"
+            android:layout_height="50dp"
+            android:src="@drawable/uteuniscorelogo"
+            android:scaleType="fitCenter"
+            android:contentDescription="Logo" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Button
+                android:id="@+id/btnProfile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profile"
+                android:textSize="12sp"
+                android:paddingHorizontal="12dp"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="@color/primary_blue" />
+
+            <Button
+                android:id="@+id/btnCreateEvent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="➕ Tạo sự kiện"
+                android:textSize="12sp"
+                android:paddingHorizontal="12dp"
+                android:backgroundTint="@color/primary_blue"
+                android:visibility="gone" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <!-- Title Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp"
+        android:orientation="vertical"
+        android:background="@color/white">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Quản lý Sự kiện"
+            android:textColor="@color/text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Danh sách tất cả sự kiện trong hệ thống"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E0E0E0" />
+
+    <!-- Events List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvEvents"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:paddingTop="8dp"
+        android:paddingHorizontal="8dp"
+        android:clipToPadding="false" />
+
 </LinearLayout>
+

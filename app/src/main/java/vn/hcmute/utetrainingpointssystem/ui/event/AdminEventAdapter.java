@@ -1,149 +1,176 @@
 package vn.hcmute.utetrainingpointssystem.ui.event;
 
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
+import android.widget.Button;
 import android.widget.TextView;
-
+import android.widget.Toast;
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.ColorUtils;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
-
-import java.util.Objects;
-
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import vn.hcmute.utetrainingpointssystem.R;
 import vn.hcmute.utetrainingpointssystem.model.event.EventDTO;
+import vn.hcmute.utetrainingpointssystem.viewmodel.event.EventListViewModel;
 
-public class AdminEventAdapter extends ListAdapter<EventDTO, AdminEventAdapter.VH> {
+public class AdminEventAdapter extends ListAdapter<EventDTO, AdminEventAdapter.ViewHolder> {
 
-    public interface OnItemClick { void onClick(EventDTO e); }
-    public interface OnEditClick { void onEdit(EventDTO e); }
-    public interface OnDeleteClick { void onDelete(EventDTO e); }
+    private final EventListViewModel viewModel;
+    private final Context context;
+    private OnEventDeletedListener onEventDeletedListener;
 
-    private final OnItemClick itemClick;
-    private final OnEditClick editClick;
-    private final OnDeleteClick deleteClick;
-
-    public AdminEventAdapter(OnItemClick itemClick, OnEditClick editClick, OnDeleteClick deleteClick) {
-        super(DIFF);
-        this.itemClick = itemClick;
-        this.editClick = editClick;
-        this.deleteClick = deleteClick;
+    public interface OnEventDeletedListener {
+        void onEventDeleted();
     }
 
-    private static final DiffUtil.ItemCallback<EventDTO> DIFF = new DiffUtil.ItemCallback<EventDTO>() {
+    public void setOnEventDeletedListener(OnEventDeletedListener listener) {
+        this.onEventDeletedListener = listener;
+    }
+
+    public AdminEventAdapter(EventListViewModel viewModel, Context context) {
+        super(DIFF_CALLBACK);
+        this.viewModel = viewModel;
+        this.context = context;
+    }
+
+    private static final DiffUtil.ItemCallback<EventDTO> DIFF_CALLBACK = new DiffUtil.ItemCallback<EventDTO>() {
         @Override
         public boolean areItemsTheSame(@NonNull EventDTO oldItem, @NonNull EventDTO newItem) {
-            return oldItem.id != null && oldItem.id.equals(newItem.id);
+            return oldItem.id == newItem.id;
         }
 
         @Override
         public boolean areContentsTheSame(@NonNull EventDTO oldItem, @NonNull EventDTO newItem) {
-            String ot = safe(oldItem.title);
-            String nt = safe(newItem.title);
-
-            String os = statusBadge(oldItem);
-            String ns = statusBadge(newItem);
-
-            return ot.equals(nt)
-                    && os.equals(ns)
-                    && Objects.equals(oldItem.categoryId, newItem.categoryId);
-        }
-
-        private String safe(String s) { return s == null ? "" : s; }
-
-        private String statusBadge(EventDTO e) {
-            String computed = safe(e.computedStatus).trim();
-            if (!computed.isEmpty()) return computed;
-            return safe(e.status).trim();
+            return oldItem.title.equals(newItem.title);
         }
     };
 
     @NonNull
     @Override
-    public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_admin_event, parent, false);
-        return new VH(v);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return new ViewHolder(LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_event_admin, parent, false));
     }
 
     @Override
-    public void onBindViewHolder(@NonNull VH h, int position) {
-        EventDTO e = getItem(position);
-
-        // ===== category -> tag + color =====
-        int cardColor;
-        String tagText;
-
-        Long cid = e.categoryId; // đúng field của em
-
-        if (cid != null && cid == 1L) {
-            tagText = "DRL";
-            cardColor = ContextCompat.getColor(h.itemView.getContext(), R.color.cat_prl);
-        } else if (cid != null && cid == 2L) {
-            tagText = "CTXH";
-            cardColor = ContextCompat.getColor(h.itemView.getContext(), R.color.cat_ctxh);
-        } else if (cid != null && cid == 3L) {
-            tagText = "CDDN";
-            cardColor = ContextCompat.getColor(h.itemView.getContext(), R.color.cat_cddn);
-        } else {
-            tagText = "N/A";
-            cardColor = 0xFFEFEFEF;
-        }
-
-        h.tvTag.setText(tagText);
-
-        // ===== nền item (root) =====
-        GradientDrawable bg = new GradientDrawable();
-        bg.setCornerRadius(24f);
-        bg.setColor(cardColor);
-        h.root.setBackground(bg);
-
-        // ===== nền box icon nhạt hơn =====
-        int lightColor = ColorUtils.blendARGB(cardColor, Color.WHITE, 0.55f);
-
-        Drawable boxBg = h.boxIcon.getBackground();
-        if (boxBg != null) {
-            boxBg = boxBg.mutate();
-            boxBg.setTint(lightColor);
-        }
-
-        // ===== bind text =====
-        h.txtTitle.setText(e.title == null ? "" : e.title);
-
-        String computed = e.computedStatus == null ? "" : e.computedStatus.trim();
-        String manual = e.status == null ? "" : e.status.trim();
-        h.txtStatus.setText(!computed.isEmpty() ? computed : manual);
-
-        // ===== clicks =====
-        h.itemView.setOnClickListener(v -> { if (itemClick != null) itemClick.onClick(e); });
-        h.btnEdit.setOnClickListener(v -> { if (editClick != null) editClick.onEdit(e); });
-        h.btnDelete.setOnClickListener(v -> { if (deleteClick != null) deleteClick.onDelete(e); });
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        EventDTO event = getItem(position);
+        holder.bind(event, viewModel, context, onEventDeletedListener);
     }
 
-    static class VH extends RecyclerView.ViewHolder {
-        View root;
-        LinearLayout boxIcon;
-        TextView tvTag, txtTitle, txtStatus;
-        ImageButton btnEdit, btnDelete;
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        private final TextView tvEventTitle;
+        private final TextView tvEventCategory;
+        private final TextView tvEventStatus;
+        private final TextView tvEventTime;
+        private final Button btnEdit;
+        private final Button btnDelete;
 
-        VH(@NonNull View itemView) {
+        public ViewHolder(@NonNull android.view.View itemView) {
             super(itemView);
-            root = itemView.findViewById(R.id.root);
-            boxIcon = itemView.findViewById(R.id.boxIcon);
-            tvTag = itemView.findViewById(R.id.tvTag);
-
-            txtTitle = itemView.findViewById(R.id.tvTitle);
-            txtStatus = itemView.findViewById(R.id.tvStatus);
+            tvEventTitle = itemView.findViewById(R.id.tvEventTitle);
+            tvEventCategory = itemView.findViewById(R.id.tvEventCategory);
+            tvEventStatus = itemView.findViewById(R.id.tvEventStatus);
+            tvEventTime = itemView.findViewById(R.id.tvEventTime);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);
         }
+
+        public void bind(EventDTO event, EventListViewModel viewModel, Context context, AdminEventAdapter.OnEventDeletedListener onEventDeletedListener) {
+            tvEventTitle.setText(event.title != null ? event.title : "Event");
+            tvEventCategory.setText(getCategoryName(event.categoryId));
+            tvEventStatus.setText(event.status != null ? event.status : "UNKNOWN");
+            tvEventTime.setText(event.startTime != null ? event.startTime : "N/A");
+
+            // Click to view details
+            itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(context, EventDetailActivity.class);
+                intent.putExtra("eventId", event.id);
+                context.startActivity(intent);
+            });
+
+            // Edit button
+            btnEdit.setOnClickListener(v -> {
+                Intent intent = new Intent(context, EventCreateActivity.class);
+                intent.putExtra("eventId", event.id);
+                intent.putExtra("isEdit", true);
+                context.startActivity(intent);
+            });
+
+            // Delete button
+            btnDelete.setOnClickListener(v -> {
+                new AlertDialog.Builder(context)
+                        .setTitle("Xác nhận xóa")
+                        .setMessage("Bạn chắc muốn xóa sự kiện: " + event.title + "?")
+                        .setNegativeButton("Hủy", null)
+                        .setPositiveButton("Xóa", (dialog, which) -> {
+                            Toast.makeText(context, "Đang xóa...", Toast.LENGTH_SHORT).show();
+
+                            viewModel.deleteEvent(event.id, new Callback<Void>() {
+                                @Override
+                                public void onResponse(Call<Void> call, Response<Void> response) {
+                                    if (response.isSuccessful()) {
+                                        Toast.makeText(context, "✓ Sự kiện đã bị xóa", Toast.LENGTH_SHORT).show();
+                                        if (onEventDeletedListener != null) {
+                                            onEventDeletedListener.onEventDeleted();
+                                        }
+                                    } else {
+                                        // Handle specific error codes
+                                        String errorMsg = "Xóa thất bại";
+
+                                        try {
+                                            if (response.errorBody() != null) {
+                                                String errorBody = response.errorBody().string();
+                                                if (errorBody.contains("foreign key constraint")) {
+                                                    errorMsg = "❌ Không thể xóa! Sự kiện đã có dữ liệu liên kết";
+                                                } else if (errorBody.contains("CONSTRAINT")) {
+                                                    errorMsg = "❌ Không thể xóa! Sự kiện đã có dữ liệu liên kết";
+                                                }
+                                            }
+                                        } catch (Exception e) {
+                                            // If error parsing fails
+                                            if (response.code() == 409) {
+                                                errorMsg = "❌ Không thể xóa! Sự kiện đã có dữ liệu liên kết";
+                                            }
+                                        }
+
+                                        Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<Void> call, Throwable t) {
+                                    String errorMsg = t.getMessage();
+                                    if (errorMsg == null || errorMsg.isEmpty()) {
+                                        errorMsg = "Lỗi kết nối";
+                                    }
+                                    Toast.makeText(context, "❌ Lỗi: " + errorMsg, Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        })
+                        .show();
+            });
+        }
+
+        private String getCategoryName(Long categoryId) {
+            if (categoryId == null) return "Unknown";
+            switch (categoryId.intValue()) {
+                case 1:
+                    return "DRL";
+                case 2:
+                    return "CTXH";
+                case 3:
+                    return "CDDN";
+                default:
+                    return "Other";
+            }
+        }
     }
 }
+

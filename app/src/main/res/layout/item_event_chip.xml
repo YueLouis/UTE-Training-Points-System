@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layoutEventChip"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="6dp"
+    android:layout_marginVertical="3dp"
+    android:background="@drawable/bg_event_chip_background">
+
+    <TextView
+        android:id="@+id/tvChipCategory"
+        android:layout_width="wrap_content"
+        android:layout_height="22dp"
+        android:gravity="center"
+        android:text="DRL"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:paddingHorizontal="6dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/bg_white_rounded_8"
+        android:minWidth="38dp"/>
+
+    <TextView
+        android:id="@+id/tvChipTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="HỖ TRỢ TRUYỀN THÔNG"
+        android:textSize="11sp"
+        android:textColor="@color/black"
+        android:maxLines="1"
+        android:ellipsize="end"/>
+</LinearLayout>

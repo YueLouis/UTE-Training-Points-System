@@ -2,4 +2,41 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="background_main">#F7F4FF</color>
+
+    <color name="text_primary">#1F1A2E</color>
+    <color name="text_secondary">#6B647A</color>
+    <color name="text_hint">#A19BB3</color>
+    <color name="text_link">#5A4FCF</color>
+
+    <color name="icon_gray">#8A8596</color>
+
+    <color name="primary_blue">#5A4FCF</color>
+
+    <color name="gradient_start">#6A5AE0</color>
+    <color name="gradient_end">#4B3CC9</color>
+
+    <color name="card_background">#FFFFFF</color>
+    <color name="input_background">#F1EEFF</color>
+
+    <color name="cat_prl">#FF5733</color>
+    <color name="cat_ctxh">#33FF57</color>
+    <color name="cat_other">#3357FF</color>
+    <color name="cat_cddn">#FF33A1</color>
+
+    <color name="light_blue_card">#E3F2FD</color>
+    <color name="register_green">#4CAF50</color>
+    <color name="cancel_red">#F44336</color>
+    <color name="drl_color">#2196F3</color>
+    <color name="ctxh_color">#FF9800</color>
+    <color name="cddn_color">#9C27B0</color>
+
+    <!-- Admin Dashboard Colors -->
+    <color name="admin_users_bg">#E1F5FE</color>
+    <color name="admin_users_icon">#0288D1</color>
+    <color name="admin_events_bg">#F3E5F5</color>
+    <color name="admin_events_icon">#7B1FA2</color>
+    <color name="admin_categories_bg">#FFF3E0</color>
+    <color name="admin_categories_icon">#E65100</color>
 </resources>

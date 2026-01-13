@@ -4,9 +4,7 @@ plugins {
 
 android {
     namespace = "vn.hcmute.utetrainingpointssystem"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "vn.hcmute.utetrainingpointssystem"
@@ -52,6 +50,13 @@ dependencies {
 
     // RecyclerView
     implementation("androidx.recyclerview:recyclerview:1.3.2")
+
+    // CardView
+    implementation("androidx.cardview:cardview:1.0.0")
+
+    // Glide for image loading
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

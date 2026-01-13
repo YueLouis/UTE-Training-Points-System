@@ -23,7 +23,6 @@ import vn.hcmute.utetrainingpointssystem.network.api.AuthApi;
 public class ForgotEmailActivity extends AppCompatActivity {
 
     private EditText edtEmail;
-    private TextView tvDemoCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,35 +30,26 @@ public class ForgotEmailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_forgot_email);
 
         edtEmail = findViewById(R.id.edtEmail);
-        tvDemoCode = findViewById(R.id.tvDemoCode);
-        Button btnSend = findViewById(R.id.btnSend);
-        Button btnSkip = findViewById(R.id.btnSkip);
+        Button btnNext = findViewById(R.id.btnNext);
         ProgressBar progressBar = findViewById(R.id.progressBar);
 
-        btnSkip.setOnClickListener(v -> {
-            String email = edtEmail.getText().toString().trim();
-            Intent i = new Intent(ForgotEmailActivity.this, ForgotCodeActivity.class);
-            i.putExtra("email", email);
-            startActivity(i);
-        });
-
-        btnSend.setOnClickListener(v -> {
+        btnNext.setOnClickListener(v -> {
             String email = edtEmail.getText().toString().trim();
             if (email.isEmpty()) {
                 Toast.makeText(this, "Vui lòng nhập email", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            btnSend.setEnabled(false);
-            btnSend.setText("Đang gửi...");
+            btnNext.setEnabled(false);
+            btnNext.setText("Đang gửi...");
             progressBar.setVisibility(View.VISIBLE);
 
             AuthApi api = RetrofitClient.getClient().create(AuthApi.class);
             api.request(new ForgotPasswordRequest(email)).enqueue(new Callback<ForgotPasswordResponse>() {
                 @Override
                 public void onResponse(Call<ForgotPasswordResponse> call, Response<ForgotPasswordResponse> response) {
-                    btnSend.setEnabled(true);
-                    btnSend.setText("Gửi mã");
+                    btnNext.setEnabled(true);
+                    btnNext.setText("Next");
                     progressBar.setVisibility(View.GONE);
 
                     if (!response.isSuccessful() || response.body() == null) {
@@ -90,12 +80,13 @@ public class ForgotEmailActivity extends AppCompatActivity {
                         i.putExtra("demoCode", res.demoCode);
                     }
                     startActivity(i);
+                    finish();
                 }
 
                 @Override
                 public void onFailure(Call<ForgotPasswordResponse> call, Throwable t) {
-                    btnSend.setEnabled(true);
-                    btnSend.setText("Gửi mã");
+                    btnNext.setEnabled(true);
+                    btnNext.setText("Next");
                     progressBar.setVisibility(View.GONE);
                     
                     String errorMsg = t.getMessage();

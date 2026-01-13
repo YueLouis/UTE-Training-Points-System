@@ -7,6 +7,10 @@ import okhttp3.Request;
 import okhttp3.Response;
 import vn.hcmute.utetrainingpointssystem.core.TokenManager;
 
+/**
+ * AuthInterceptor - Add JWT Bearer token to all requests
+ * Header: Authorization: Bearer <access_token>
+ */
 public class AuthInterceptor implements Interceptor {
 
     private final TokenManager tokenManager;
@@ -19,7 +23,7 @@ public class AuthInterceptor implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         Request original = chain.request();
 
-        String token = tokenManager.getToken();
+        String token = tokenManager.getAccessToken();
         if (token == null || token.trim().isEmpty()) {
             return chain.proceed(original);
         }

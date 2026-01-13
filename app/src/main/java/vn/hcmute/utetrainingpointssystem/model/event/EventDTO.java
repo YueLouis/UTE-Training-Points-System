@@ -1,16 +1,43 @@
 package vn.hcmute.utetrainingpointssystem.model.event;
 
 public class EventDTO {
-    public long id;
-    public String title;        // nếu BE trả "title" thì nên dùng title
+    public Long id;
+    public Long semesterId;
+    public Long categoryId;
+
+    public String title;
     public String description;
+    public String location;
+    public String bannerUrl;
+
     public String startTime;
     public String endTime;
+    public String registrationDeadline;
 
-    public long getId() { return id; }
-    public String getTitle() { return title; }
-    public String getDescription() { return description; }
-    public String getStartTime() { return startTime; }
-    public String getEndTime() { return endTime; }
+    public Integer maxParticipants;
+    public Long pointTypeId;
+    public Integer pointValue;
+
+    public Long createdBy;
+
+    public String status;
+
+    @com.google.gson.annotations.SerializedName("computedStatus")
+    public String computedStatus;
+
+    public Boolean canRegister;
+    public Boolean canCheckin;
+    public Boolean canCheckout;
+
+    public Boolean registered;
+    public Boolean checkedIn;
+    public Boolean completed;
+
+    public String registrationStatus;
+    public String studentCheckinTime;
+    public String studentCheckoutTime;
+
+    public String eventMode;
+    public String surveyUrl;
+    public String surveySecretCode;
 }
-

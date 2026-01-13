@@ -35,6 +35,8 @@
         <activity android:name=".MainActivity" />
         <activity android:name=".ui.user.ForgotEmailActivity" />
         <activity android:name=".ui.user.ForgotCodeActivity" />
+        <activity android:name=".ui.user.ResetPasswordActivity" />
+        <activity android:name=".ui.user.PasswordSuccessActivity" />
         <activity android:name=".ui.user.UserListActivity" />
         <activity android:name=".ui.admin.AdminDashboardActivity" />
         <activity android:name=".ui.admin.AttendanceActivity" />

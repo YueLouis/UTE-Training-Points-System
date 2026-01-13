@@ -2,6 +2,7 @@ package vn.hcmute.utetrainingpointssystem.ui.user;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,47 +16,45 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import vn.hcmute.utetrainingpointssystem.R;
-import vn.hcmute.utetrainingpointssystem.core.TokenManager;
 import vn.hcmute.utetrainingpointssystem.model.auth.AuthResponse;
 import vn.hcmute.utetrainingpointssystem.model.auth.VerifySecretRequest;
 import vn.hcmute.utetrainingpointssystem.network.RetrofitClient;
 import vn.hcmute.utetrainingpointssystem.network.api.AuthApi;
-import vn.hcmute.utetrainingpointssystem.ui.admin.AdminDashboardActivity;
-import vn.hcmute.utetrainingpointssystem.ui.event.EventListActivity;
 
 public class ForgotCodeActivity extends AppCompatActivity {
 
     private String email;
-    private TokenManager tokenManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forgot_code);
 
-        tokenManager = new TokenManager(this);
 
         email = getIntent().getStringExtra("email");
         if (email == null) email = "";
 
-        TextView tvEmail = findViewById(R.id.tvEmail);
-        tvEmail.setText("Email: " + email);
+        // Get OTP input fields
+        EditText etOtp1 = findViewById(R.id.etOtp1);
+        EditText etOtp2 = findViewById(R.id.etOtp2);
+        EditText etOtp3 = findViewById(R.id.etOtp3);
+        EditText etOtp4 = findViewById(R.id.etOtp4);
+        EditText etOtp5 = findViewById(R.id.etOtp5);
+        EditText etOtp6 = findViewById(R.id.etOtp6);
 
-        TextView tvDemoCode = findViewById(R.id.tvDemoCode);
-        String demoCode = getIntent().getStringExtra("demoCode");
-        if (demoCode != null && !demoCode.isEmpty()) {
-            tvDemoCode.setVisibility(View.VISIBLE);
-            tvDemoCode.setText("Mã OTP (Demo): " + demoCode);
-        }
-
-        EditText edtCode = findViewById(R.id.edtCode);
         Button btnVerify = findViewById(R.id.btnVerify);
         ProgressBar progressBar = findViewById(R.id.progressBar);
 
         btnVerify.setOnClickListener(v -> {
-            String code = edtCode.getText().toString().trim();
-            if (code.isEmpty()) {
-                Toast.makeText(this, "Vui lòng nhập mã", Toast.LENGTH_SHORT).show();
+            String code = etOtp1.getText().toString() +
+                         etOtp2.getText().toString() +
+                         etOtp3.getText().toString() +
+                         etOtp4.getText().toString() +
+                         etOtp5.getText().toString() +
+                         etOtp6.getText().toString();
+
+            if (code.length() < 6) {
+                Toast.makeText(this, "Vui lòng nhập đầy đủ 6 chữ số", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -67,6 +66,10 @@ public class ForgotCodeActivity extends AppCompatActivity {
             api.verify(new VerifySecretRequest(email, code)).enqueue(new Callback<AuthResponse>() {
                 @Override
                 public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
+                    Log.d("ForgotCodeActivity", "Response code: " + response.code());
+                    Log.d("ForgotCodeActivity", "Response successful: " + response.isSuccessful());
+                    Log.d("ForgotCodeActivity", "Response body: " + response.body());
+
                     btnVerify.setEnabled(true);
                     btnVerify.setText("Xác nhận");
                     progressBar.setVisibility(View.GONE);
@@ -89,16 +92,12 @@ public class ForgotCodeActivity extends AppCompatActivity {
                         return;
                     }
 
-                    AuthResponse res = response.body();
-                    if (res.user == null) {
-                        Toast.makeText(ForgotCodeActivity.this, "Thiếu dữ liệu user", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    // Sau khi verify thành công, quay lại trang login để user đăng nhập thật
-                    Toast.makeText(ForgotCodeActivity.this, "Xác thực thành công! Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
-                    Intent i = new Intent(ForgotCodeActivity.this, LoginActivity.class);
-                    i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    Log.d("ForgotCodeActivity", "Verification successful! Navigating to ResetPasswordActivity");
+                    // Sau khi verify thành công, chuyển sang trang đặt lại mật khẩu
+                    Toast.makeText(ForgotCodeActivity.this, "Xác thực thành công! Vui lòng đặt lại mật khẩu.", Toast.LENGTH_LONG).show();
+                    Intent i = new Intent(ForgotCodeActivity.this, ResetPasswordActivity.class);
+                    i.putExtra("email", email);
+                    i.putExtra("otpCode", code);
                     startActivity(i);
                     finish();
                 }

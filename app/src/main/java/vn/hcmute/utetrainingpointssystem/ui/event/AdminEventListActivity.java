@@ -21,6 +21,7 @@ import vn.hcmute.utetrainingpointssystem.core.ResultState;
 import vn.hcmute.utetrainingpointssystem.model.category.EventCategoryDTO;
 import vn.hcmute.utetrainingpointssystem.model.event.EventDTO;
 import vn.hcmute.utetrainingpointssystem.viewmodel.event.EventManageViewModel;
+import vn.hcmute.utetrainingpointssystem.viewmodel.event.EventListViewModel;
 
 public class AdminEventListActivity extends AppCompatActivity {
 
@@ -49,11 +50,8 @@ public class AdminEventListActivity extends AppCompatActivity {
         btnAdd = findViewById(R.id.btnAdd);
         spFilterCategory = findViewById(R.id.spFilterCategory);
 
-        adapter = new AdminEventAdapter(
-                this::openDetail,
-                this::openEdit,
-                this::confirmDelete
-        );
+        EventListViewModel eventListVM = new ViewModelProvider(this).get(EventListViewModel.class);
+        adapter = new AdminEventAdapter(eventListVM, this);
 
         rv.setLayoutManager(new LinearLayoutManager(this));
         rv.setAdapter(adapter);
@@ -172,7 +170,27 @@ public class AdminEventListActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle("Xoá event?")
                 .setMessage("Bạn chắc muốn xoá: " + (e.title == null ? "" : e.title))
-                .setPositiveButton("Xoá", (d, which) -> vm.deleteEvent(e.id))
+                .setPositiveButton("Xoá", (d, which) -> {
+                    Toast.makeText(AdminEventListActivity.this, "Đang xóa...", Toast.LENGTH_SHORT).show();
+
+                    vm.deleteEvent(e.id, new retrofit2.Callback<Void>() {
+                        @Override
+                        public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
+                            if (response.isSuccessful()) {
+                                Toast.makeText(AdminEventListActivity.this, "✓ Sự kiện đã bị xóa", Toast.LENGTH_SHORT).show();
+                                // Delay a bit then refresh
+                                rv.postDelayed(() -> applyFilter(lastFilterPos), 500);
+                            } else {
+                                Toast.makeText(AdminEventListActivity.this, "✗ Xóa thất bại: " + response.code(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(retrofit2.Call<Void> call, Throwable t) {
+                            Toast.makeText(AdminEventListActivity.this, "✗ Lỗi: " + (t.getMessage() != null ? t.getMessage() : "Unknown"), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                })
                 .setNegativeButton("Huỷ", null)
                 .show();
     }

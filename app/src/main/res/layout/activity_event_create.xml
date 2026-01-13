@@ -1,403 +1,403 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="#F6F0FF">
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:background="#F6F0FF">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
 
         <!-- Title -->
         <TextView
-            android:id="@+id/tvTitle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Tạo event mới"
-            android:textStyle="bold"
-            android:textSize="22sp"
-            android:textColor="#111"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+                android:id="@+id/tvTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Tạo event mới"
+                android:textStyle="bold"
+                android:textSize="22sp"
+                android:textColor="#111"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
         <ImageView
-            android:id="@+id/btnBack"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:padding="6dp"
-            android:src="@drawable/back_icon"
-            app:layout_constraintBottom_toBottomOf="@id/tvTitle"
-            app:layout_constraintEnd_toEndOf="parent" />
+                android:id="@+id/btnBack"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="6dp"
+                android:src="@drawable/back_icon"
+                app:layout_constraintBottom_toBottomOf="@id/tvTitle"
+                app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Card container -->
         <LinearLayout
-            android:id="@+id/card"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_card"
-            android:orientation="vertical"
-            android:padding="14dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvTitle">
+                android:id="@+id/card"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_card"
+                android:orientation="vertical"
+                android:padding="14dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvTitle">
 
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                android:text="Tạo event mới bằng cách điền đầy đủ các thông tin bên dưới"
-                android:textColor="#666"
-                android:textSize="12sp" />
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:text="Tạo event mới bằng cách điền đầy đủ các thông tin bên dưới"
+                    android:textColor="#666"
+                    android:textSize="12sp" />
 
             <!-- ===== Row: id + học kì + loại + điểm ===== -->
             <!-- ===== Row: học kì + loại + điểm (bỏ id, loại rộng hơn) ===== -->
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:baselineAligned="false"
-                android:layout_marginBottom="10dp">
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:baselineAligned="false"
+                    android:layout_marginBottom="10dp">
 
                 <!-- học kì -->
                 <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1.2"
-                    android:orientation="vertical"
-                    android:layout_marginEnd="8dp">
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1.2"
+                        android:orientation="vertical"
+                        android:layout_marginEnd="8dp">
 
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Học kì:"
-                        android:textColor="#333"
-                        android:textSize="12sp" />
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Học kì:"
+                            android:textColor="#333"
+                            android:textSize="12sp" />
 
                     <Spinner
-                        android:id="@+id/spSemester"
-                        android:layout_width="match_parent"
-                        android:layout_height="40dp"
-                        android:background="@drawable/bg_field" />
+                            android:id="@+id/spSemester"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_field" />
                 </LinearLayout>
 
                 <!-- loại (rộng hơn) -->
                 <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="2.0"
-                    android:orientation="vertical"
-                    android:layout_marginEnd="8dp">
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2.0"
+                        android:orientation="vertical"
+                        android:layout_marginEnd="8dp">
 
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Loại:"
-                        android:textColor="#333"
-                        android:textSize="12sp" />
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Loại:"
+                            android:textColor="#333"
+                            android:textSize="12sp" />
 
                     <Spinner
-                        android:id="@+id/spCategory"
-                        android:layout_width="match_parent"
-                        android:layout_height="40dp"
-                        android:background="@drawable/bg_field" />
+                            android:id="@+id/spCategory"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_field" />
                 </LinearLayout>
 
                 <!-- điểm -->
                 <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.9"
-                    android:orientation="vertical">
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.9"
+                        android:orientation="vertical">
 
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Số điểm:"
-                        android:textColor="#333"
-                        android:textSize="12sp" />
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Số điểm:"
+                            android:textColor="#333"
+                            android:textSize="12sp" />
 
                     <EditText
-                        android:id="@+id/edtPoints"
-                        android:layout_width="match_parent"
-                        android:layout_height="40dp"
-                        android:background="@drawable/bg_field"
-                        android:hint="VD: 5"
-                        android:inputType="number"
-                        android:paddingStart="10dp"
-                        android:paddingEnd="10dp" />
+                            android:id="@+id/edtPoints"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_field"
+                            android:hint="VD: 5"
+                            android:inputType="number"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="10dp" />
                 </LinearLayout>
             </LinearLayout>
 
 
             <!-- Tiêu đề -->
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Tiêu đề:"
-                android:textColor="#333"
-                android:textStyle="bold" />
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Tiêu đề:"
+                    android:textColor="#333"
+                    android:textStyle="bold" />
 
             <EditText
-                android:id="@+id/edtTitle"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:layout_marginTop="6dp"
-                android:background="@drawable/bg_field"
-                android:hint="Điền tiêu đề sự kiện"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp" />
+                    android:id="@+id/edtTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_field"
+                    android:hint="Điền tiêu đề sự kiện"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp" />
 
             <!-- Mô tả -->
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Mô tả:"
-                android:textColor="#333"
-                android:textStyle="bold" />
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Mô tả:"
+                    android:textColor="#333"
+                    android:textStyle="bold" />
 
             <EditText
-                android:id="@+id/edtDescription"
-                android:layout_width="match_parent"
-                android:layout_height="140dp"
-                android:layout_marginTop="6dp"
-                android:background="@drawable/bg_field"
-                android:gravity="top"
-                android:hint="Điền mô tả"
-                android:inputType="textMultiLine"
-                android:padding="10dp" />
+                    android:id="@+id/edtDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="140dp"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_field"
+                    android:gravity="top"
+                    android:hint="Điền mô tả"
+                    android:inputType="textMultiLine"
+                    android:padding="10dp" />
 
             <!-- Bắt đầu / Kết thúc / Hạn chót -->
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Bắt đầu:"
-                    android:textColor="#333"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/edtStartTime"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="6dp"
-                    android:background="@drawable/bg_field"
-                    android:clickable="true"
-                    android:focusable="false"
-                    android:hint="Chạm để chọn"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp" />
-
-                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Kết thúc:"
-                    android:textColor="#333"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/edtEndTime"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="6dp"
-                    android:background="@drawable/bg_field"
-                    android:clickable="true"
-                    android:focusable="false"
-                    android:hint="Chạm để chọn"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp" />
+                    android:orientation="vertical">
 
                 <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="Hạn chót đăng kí:"
-                    android:textColor="#333"
-                    android:textStyle="bold" />
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Bắt đầu:"
+                        android:textColor="#333"
+                        android:textStyle="bold" />
 
                 <EditText
-                    android:id="@+id/edtDeadline"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="6dp"
-                    android:background="@drawable/bg_field"
-                    android:clickable="true"
-                    android:focusable="false"
-                    android:hint="Chạm để chọn"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp" />
-            </LinearLayout>
-
-            <!-- Hình thức + số lượng -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:baselineAligned="false"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="10dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Hình thức:"
-                        android:textColor="#333"
-                        android:textStyle="bold" />
-
-                    <Spinner
-                        android:id="@+id/spParticipationType"
-                        android:layout_width="match_parent"
-                        android:layout_height="44dp"
-                        android:layout_marginTop="6dp"
-                        android:background="@drawable/bg_field" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Số lượng:"
-                        android:textColor="#333"
-                        android:textStyle="bold" />
-
-                    <EditText
-                        android:id="@+id/edtMaxParticipants"
+                        android:id="@+id/edtStartTime"
                         android:layout_width="match_parent"
                         android:layout_height="44dp"
                         android:layout_marginTop="6dp"
                         android:background="@drawable/bg_field"
-                        android:hint="VD: 300"
-                        android:inputType="number"
+                        android:clickable="true"
+                        android:focusable="false"
+                        android:hint="Chạm để chọn"
                         android:paddingStart="10dp"
                         android:paddingEnd="10dp" />
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="Kết thúc:"
+                        android:textColor="#333"
+                        android:textStyle="bold" />
+
+                <EditText
+                        android:id="@+id/edtEndTime"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_field"
+                        android:clickable="true"
+                        android:focusable="false"
+                        android:hint="Chạm để chọn"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp" />
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="Hạn chót đăng kí:"
+                        android:textColor="#333"
+                        android:textStyle="bold" />
+
+                <EditText
+                        android:id="@+id/edtDeadline"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_field"
+                        android:clickable="true"
+                        android:focusable="false"
+                        android:hint="Chạm để chọn"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp" />
+            </LinearLayout>
+
+            <!-- Hình thức + số lượng -->
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="10dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                    <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Hình thức:"
+                            android:textColor="#333"
+                            android:textStyle="bold" />
+
+                    <Spinner
+                            android:id="@+id/spParticipationType"
+                            android:layout_width="match_parent"
+                            android:layout_height="44dp"
+                            android:layout_marginTop="6dp"
+                            android:background="@drawable/bg_field" />
+                </LinearLayout>
+
+                <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                    <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Số lượng:"
+                            android:textColor="#333"
+                            android:textStyle="bold" />
+
+                    <EditText
+                            android:id="@+id/edtMaxParticipants"
+                            android:layout_width="match_parent"
+                            android:layout_height="44dp"
+                            android:layout_marginTop="6dp"
+                            android:background="@drawable/bg_field"
+                            android:hint="VD: 300"
+                            android:inputType="number"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="10dp" />
                 </LinearLayout>
             </LinearLayout>
 
             <!-- ===== Group: Địa điểm (chỉ hiện khi Trực tiếp) ===== -->
             <LinearLayout
-                android:id="@+id/groupLocation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:orientation="vertical">
-
-                <TextView
+                    android:id="@+id/groupLocation"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Địa điểm:"
-                    android:textColor="#333"
-                    android:textStyle="bold" />
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical">
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Địa điểm:"
+                        android:textColor="#333"
+                        android:textStyle="bold" />
 
                 <EditText
-                    android:id="@+id/edtLocation"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="6dp"
-                    android:background="@drawable/bg_field"
-                    android:hint="Nhập địa điểm"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp" />
+                        android:id="@+id/edtLocation"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_field"
+                        android:hint="Nhập địa điểm"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp" />
             </LinearLayout>
 
             <!-- ===== Group: Khảo sát (chỉ hiện khi Online) ===== -->
             <LinearLayout
-                android:id="@+id/groupSurvey"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Link khảo sát (nếu có):"
-                    android:textColor="#333"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/edtSurveyUrl"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="6dp"
-                    android:background="@drawable/bg_field"
-                    android:hint="https://..."
-                    android:inputType="textUri"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp" />
-
-                <TextView
+                    android:id="@+id/groupSurvey"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Mã khảo sát (nếu có):"
-                    android:textColor="#333"
-                    android:textStyle="bold" />
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Link khảo sát (nếu có):"
+                        android:textColor="#333"
+                        android:textStyle="bold" />
 
                 <EditText
-                    android:id="@+id/edtSurveySecretCode"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="6dp"
-                    android:background="@drawable/bg_field"
-                    android:hint="VD: ABC123"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp" />
+                        android:id="@+id/edtSurveyUrl"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_field"
+                        android:hint="https://..."
+                        android:inputType="textUri"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp" />
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="Mã khảo sát (nếu có):"
+                        android:textColor="#333"
+                        android:textStyle="bold" />
+
+                <EditText
+                        android:id="@+id/edtSurveySecretCode"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_field"
+                        android:hint="VD: ABC123"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp" />
             </LinearLayout>
 
             <!-- Banner URL -->
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Banner URL (nếu có):"
-                android:textColor="#333"
-                android:textStyle="bold" />
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Banner URL (nếu có):"
+                    android:textColor="#333"
+                    android:textStyle="bold" />
 
             <EditText
-                android:id="@+id/edtBannerUrl"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:layout_marginTop="6dp"
-                android:background="@drawable/bg_field"
-                android:hint="https://... (optional)"
-                android:inputType="textUri"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp" />
+                    android:id="@+id/edtBannerUrl"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_field"
+                    android:hint="https://... (optional)"
+                    android:inputType="textUri"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp" />
 
             <!-- Button -->
             <Button
-                android:id="@+id/btnSubmit"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="16dp"
-                android:backgroundTint="#1EC445"
-                android:text="ĐĂNG BÀI"
-                android:textColor="#FFFFFF"
-                android:textStyle="bold" />
+                    android:id="@+id/btnSubmit"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="16dp"
+                    android:backgroundTint="#1EC445"
+                    android:text="ĐĂNG BÀI"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
 
         </LinearLayout>
 
