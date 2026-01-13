@@ -5,10 +5,15 @@ import vn.hcmute.utetrainingpointssystem.model.auth.AuthResponse;
 import vn.hcmute.utetrainingpointssystem.model.auth.ForgotPasswordRequest;
 import vn.hcmute.utetrainingpointssystem.model.auth.ForgotPasswordResponse;
 import vn.hcmute.utetrainingpointssystem.model.auth.LoginRequest;
-import vn.hcmute.utetrainingpointssystem.model.auth.VerifySecretRequest;
+import vn.hcmute.utetrainingpointssystem.model.auth.RefreshTokenRequest;
+import vn.hcmute.utetrainingpointssystem.model.auth.ResetPasswordRequest;
 import vn.hcmute.utetrainingpointssystem.network.RetrofitClient;
 import vn.hcmute.utetrainingpointssystem.network.api.AuthApi;
 
+/**
+ * AuthRepository - Handle authentication API calls
+ * Updated to match backend endpoints
+ */
 public class AuthRepository {
     private final AuthApi api;
 
@@ -20,11 +25,15 @@ public class AuthRepository {
         return api.login(body);
     }
 
-    public Call<ForgotPasswordResponse> forgotPasswordRequest(ForgotPasswordRequest body) {
-        return api.request(body);
+    public Call<AuthResponse> refresh(RefreshTokenRequest body) {
+        return api.refresh(body);
     }
 
-    public Call<AuthResponse> verifySecret(VerifySecretRequest body) {
-        return api.verify(body);
+    public Call<ForgotPasswordResponse> forgotPassword(ForgotPasswordRequest body) {
+        return api.forgotPassword(body);
+    }
+
+    public Call<ForgotPasswordResponse> resetPassword(ResetPasswordRequest body) {
+        return api.resetPassword(body);
     }
 }

@@ -7,6 +7,9 @@ import vn.hcmute.utetrainingpointssystem.model.registration.EventRegistrationReq
 import vn.hcmute.utetrainingpointssystem.network.RetrofitClient;
 import vn.hcmute.utetrainingpointssystem.network.api.RegistrationApi;
 
+/**
+ * RegistrationRepository - Handle event registration API calls
+ */
 public class RegistrationRepository {
     private final RegistrationApi api;
 
@@ -27,7 +30,7 @@ public class RegistrationRepository {
     }
 
     public Call<EventRegistrationDTO> cancel(Long id, Long userId) { 
-        return api.cancel(id);
+        return api.cancel(id, userId);
     }
     
     public Call<EventRegistrationDTO> checkin(Long eventId, Long studentId, Long adminId) { 
@@ -39,6 +42,6 @@ public class RegistrationRepository {
     }
     
     public Call<EventRegistrationDTO> completeSurvey(Long eventId, Long studentId, String secretCode) { 
-        return api.completeSurvey(eventId, studentId);
+        return api.completeSurvey(eventId, studentId, secretCode);
     }
 }
