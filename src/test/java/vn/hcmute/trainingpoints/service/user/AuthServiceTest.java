@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import vn.hcmute.trainingpoints.config.security.JwtUtil;
 import vn.hcmute.trainingpoints.dto.auth.AuthResponse;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@Transactional
 class AuthServiceTest {
 
     @Autowired
@@ -117,18 +119,5 @@ class AuthServiceTest {
         });
     }
 
-    @Test
-    void testPasswordResetFlow() {
-        // Step 1: Request OTP
-        assertDoesNotThrow(() -> {
-            authService.requestReset(testUser.getEmail());
-        });
-
-        // Step 2: Verify OTP (in real test, would need to extract actual OTP)
-        // This is simplified for demo
-
-        // Step 3: Reset password
-        // In production, would extract OTP from DB/console and verify it first
-    }
 }
 

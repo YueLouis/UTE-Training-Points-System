@@ -53,6 +53,7 @@ public class AuditLog {
     private String userAgent;
 
     @Column(nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(length = 500)

@@ -1,5 +1,6 @@
 package vn.hcmute.trainingpoints.entity.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,6 +30,7 @@ public class User {
     private String phone;
 
     @Column(name = "password_hash", length = 255)
+    @JsonIgnore
     private String passwordHash;
 
     @Column(name = "role")

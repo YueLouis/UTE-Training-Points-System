@@ -36,9 +36,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = authHeader.substring(7);
 
-            if (jwtUtil.validateToken(token) && !jwtUtil.isTokenExpired(token)) {
+            if (jwtUtil.validateToken(token)
+                    && "access".equals(jwtUtil.extractType(token))
+                    && !jwtUtil.isTokenExpired(token)) {
                 Long userId = jwtUtil.extractUserId(token);
                 String role = jwtUtil.extractRole(token);
+
+                if (role == null || role.isBlank()) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
 
                 // Create authentication
                 UsernamePasswordAuthenticationToken authentication =

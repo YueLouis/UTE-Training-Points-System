@@ -1,7 +1,10 @@
 package vn.hcmute.trainingpoints.controller.registration;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import vn.hcmute.trainingpoints.dto.registration.EventRegistrationDTO;
 import vn.hcmute.trainingpoints.dto.registration.EventRegistrationRequest;
@@ -12,21 +15,22 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/event-registrations")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class EventRegistrationController {
 
     private final EventRegistrationService eventRegistrationService;
 
     // POST /api/event-registrations
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or #request.studentId == authentication.principal")
     public ResponseEntity<EventRegistrationDTO> register(
-            @RequestBody EventRegistrationRequest request
+            @Valid @RequestBody EventRegistrationRequest request
     ) {
         return ResponseEntity.ok(eventRegistrationService.register(request));
     }
 
     // GET /api/event-registrations/by-student/{studentId}
     @GetMapping("/by-student/{studentId}")
+    @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal")
     public ResponseEntity<List<EventRegistrationDTO>> getByStudent(
             @PathVariable Long studentId
     ) {
@@ -35,6 +39,7 @@ public class EventRegistrationController {
 
     // GET /api/event-registrations/by-event/{eventId}
     @GetMapping("/by-event/{eventId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<EventRegistrationDTO>> getByEvent(
             @PathVariable Long eventId
     ) {
@@ -45,9 +50,9 @@ public class EventRegistrationController {
     @PutMapping("/{id}/cancel")
     public ResponseEntity<EventRegistrationDTO> cancel(
             @PathVariable Long id,
-            @RequestParam Long userId
+            @AuthenticationPrincipal Long currentUserId
     ) {
-        return ResponseEntity.ok(eventRegistrationService.cancel(id, userId));
+        return ResponseEntity.ok(eventRegistrationService.cancel(id, currentUserId));
     }
 
     // PUT /api/event-registrations/{eventId}/checkin/{studentId}
@@ -55,9 +60,9 @@ public class EventRegistrationController {
     public ResponseEntity<EventRegistrationDTO> checkin(
             @PathVariable Long eventId,
             @PathVariable Long studentId,
-            @RequestParam(required = false) Long adminId
+            @AuthenticationPrincipal Long currentUserId
     ) {
-        return ResponseEntity.ok(eventRegistrationService.checkin(eventId, studentId, adminId));
+        return ResponseEntity.ok(eventRegistrationService.checkin(eventId, studentId, currentUserId));
     }
 
     // PUT /api/event-registrations/{eventId}/checkout/{studentId}
@@ -65,29 +70,30 @@ public class EventRegistrationController {
     public ResponseEntity<EventRegistrationDTO> checkout(
             @PathVariable Long eventId,
             @PathVariable Long studentId,
-            @RequestParam(required = false) Long adminId
+            @AuthenticationPrincipal Long currentUserId
     ) {
-        return ResponseEntity.ok(eventRegistrationService.checkout(eventId, studentId, adminId));
+        return ResponseEntity.ok(eventRegistrationService.checkout(eventId, studentId, currentUserId));
     }
 
     @PutMapping("/{id}/check-in")
     public ResponseEntity<EventRegistrationDTO> checkinById(
             @PathVariable Long id,
-            @RequestParam(required = false) Long adminId
+            @AuthenticationPrincipal Long currentUserId
     ) {
-        return ResponseEntity.ok(eventRegistrationService.checkinById(id, adminId));
+        return ResponseEntity.ok(eventRegistrationService.checkinById(id, currentUserId));
     }
 
     @PutMapping("/{id}/check-out")
     public ResponseEntity<EventRegistrationDTO> checkoutById(
             @PathVariable Long id,
-            @RequestParam(required = false) Long adminId
+            @AuthenticationPrincipal Long currentUserId
     ) {
-        return ResponseEntity.ok(eventRegistrationService.checkoutById(id, adminId));
+        return ResponseEntity.ok(eventRegistrationService.checkoutById(id, currentUserId));
     }
 
     // PUT /api/event-registrations/{eventId}/complete-survey/{studentId}
     @PutMapping("/{eventId}/complete-survey/{studentId}")
+    @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal")
     public ResponseEntity<EventRegistrationDTO> completeSurvey(
             @PathVariable Long eventId,
             @PathVariable Long studentId,

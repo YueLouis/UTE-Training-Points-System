@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import vn.hcmute.trainingpoints.entity.user.PasswordResetToken;
 import vn.hcmute.trainingpoints.entity.user.User;
@@ -15,6 +17,7 @@ import vn.hcmute.trainingpoints.service.email.ResendEmailService;
 import vn.hcmute.trainingpoints.util.ResetTokenUtil;
 
 import java.time.LocalDateTime;
+import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -22,6 +25,7 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@Transactional
 class PasswordResetServiceTest {
 
     @Autowired
@@ -35,6 +39,9 @@ class PasswordResetServiceTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @MockitoBean
+    private ResendEmailService emailService;
 
     private User testUser;
     private String testPassword = "originalPassword123";
@@ -71,6 +78,32 @@ class PasswordResetServiceTest {
         assertNotNull(token.get().getTokenHash());
         assertNull(token.get().getUsedAt());
         assertTrue(token.get().getExpiresAt().isAfter(LocalDateTime.now()));
+        verify(emailService).sendResetLink(eq(testUser.getEmail()), contains("?token="));
+    }
+
+    @Test
+    void testRequestPasswordReset_InvalidatesEarlierUnusedToken() {
+        passwordResetService.requestPasswordReset(testUser.getEmail(), "192.168.1.1", "test-agent");
+
+        ArgumentCaptor<String> firstUrl = ArgumentCaptor.forClass(String.class);
+        verify(emailService).sendResetLink(eq(testUser.getEmail()), firstUrl.capture());
+        String firstRawToken = tokenFrom(firstUrl.getValue());
+
+        clearInvocations(emailService);
+        passwordResetService.requestPasswordReset(testUser.getEmail(), "192.168.1.2", "test-agent");
+
+        ArgumentCaptor<String> secondUrl = ArgumentCaptor.forClass(String.class);
+        verify(emailService).sendResetLink(eq(testUser.getEmail()), secondUrl.capture());
+        String secondRawToken = tokenFrom(secondUrl.getValue());
+
+        assertEquals(1, tokenRepository.findAll().size());
+        assertThrows(ResponseStatusException.class,
+                () -> passwordResetService.resetPassword(firstRawToken, "newPassword456"));
+        assertDoesNotThrow(
+                () -> passwordResetService.resetPassword(secondRawToken, "newPassword456"));
+
+        User updatedUser = userRepository.findById(testUser.getId()).orElseThrow();
+        assertTrue(passwordEncoder.matches("newPassword456", updatedUser.getPasswordHash()));
     }
 
     /**
@@ -236,6 +269,10 @@ class PasswordResetServiceTest {
         String hashWithoutPepper = ResetTokenUtil.sha256(token);
 
         assertNotEquals(hashWithPepper, hashWithoutPepper);
+    }
+
+    private String tokenFrom(String resetUrl) {
+        return resetUrl.substring(resetUrl.indexOf("?token=") + "?token=".length());
     }
 }
 

@@ -44,8 +44,6 @@ public class EventRequest {
     @Min(value = 0, message = "Giá trị điểm không được âm")
     private Integer pointValue;
 
-    private Long createdBy;
-
     private EventMode eventMode;
     private String surveyUrl;
     private String surveySecretCode;

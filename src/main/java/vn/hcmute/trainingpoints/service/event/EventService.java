@@ -135,7 +135,6 @@ public class EventService {
                 .status(e.getStatus())
                 .eventMode(e.getEventMode())
                 .surveyUrl(e.getSurveyUrl())
-                .surveySecretCode(e.getSurveySecretCode())
                 .currentParticipants((int) eventRegistrationRepository.countByEventIdAndStatusNot(e.getId(), EventRegistrationStatus.CANCELLED))
                 .build();
     }
@@ -156,8 +155,6 @@ public class EventService {
         event.setMaxParticipants(req.getMaxParticipants());
         event.setPointTypeId(req.getPointTypeId());
         event.setPointValue(req.getPointValue());
-        event.setCreatedBy(req.getCreatedBy());
-
         // status set riêng (OPEN/CLOSED)
 
         event.setEventMode(req.getEventMode());
@@ -232,10 +229,11 @@ public class EventService {
     }
 
     // --------- CREATE ---------
-    public EventDTO createEvent(EventRequest req) {
+    public EventDTO createEvent(EventRequest req, Long creatorId) {
         Event event = new Event();
         updateEntityFromRequest(event, req);
 
+        event.setCreatedBy(creatorId);
         event.setStatus(EventStatus.OPEN);
 
         // default mode

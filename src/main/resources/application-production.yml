@@ -3,20 +3,21 @@ spring:
     activate:
       on-profile: production
   datasource:
-    url: ${DATABASE_URL:jdbc:mysql://localhost:3306/railway}
-    username: ${DB_USER:root}
-    password: ${DB_PASSWORD:password}
+    url: ${DATABASE_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: none
+    open-in-view: false
     show-sql: false
     properties:
       hibernate:
         format_sql: false
   flyway:
     enabled: true
-    baseline-on-migrate: true
-    validate-on-migrate: false
+    baseline-on-migrate: false
+    validate-on-migrate: true
     clean-disabled: true
 
 # ⚠️ Railway blocks SMTP on Free/Hobby plans
@@ -33,7 +34,7 @@ logging:
     org.flywaydb: WARN
 
 jwt:
-  secret: ${JWT_SECRET:please_set_jwt_secret_in_env}
+  secret: ${JWT_SECRET}
   access:
     expiration: ${JWT_ACCESS_EXPIRATION:1800000}
   refresh:
@@ -44,13 +45,22 @@ resend:
 
 app:
   reset:
-    expireSeconds: ${OTP_EXPIRATION_SECONDS:120}
     token:
       expiry-minutes: ${RESET_TOKEN_EXPIRY:15}
-    pepper: ${RESET_PEPPER:please_set_in_env}
-    frontend-url: ${RESET_FRONTEND_URL:http://localhost:3000/reset-password}
+    pepper: ${RESET_PEPPER}
+    frontend-url: ${RESET_FRONTEND_URL}
   mail:
-    from: ${MAIL_FROM:onboarding@resend.dev}
+    from: ${MAIL_FROM}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
+  security:
+    trust-forwarded-headers: ${TRUST_FORWARDED_HEADERS:false}
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
 
 management:
   endpoints:
@@ -64,6 +74,6 @@ management:
 server:
   port: ${PORT:8080}
   error:
-    include-message: always
+    include-message: never
     include-binding-errors: never
     include-stacktrace: never

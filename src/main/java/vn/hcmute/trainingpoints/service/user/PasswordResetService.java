@@ -47,11 +47,17 @@ public class PasswordResetService {
      */
     @Transactional
     public void requestPasswordReset(String email, String ip, String userAgent) {
+        if (email == null || email.isBlank()) {
+            return;
+        }
+
+        String normalizedEmail = email.trim();
+
         // Step 1: Check if user exists
-        var userOpt = userRepository.findByEmail(email.trim());
+        var userOpt = userRepository.findByEmail(normalizedEmail);
 
         if (userOpt.isEmpty()) {
-            log.warn("Password reset requested for non-existent email: {}", email);
+            log.warn("Password reset requested for an unknown email address");
             return; // Silent fail (don't reveal email existence)
         }
 
@@ -59,43 +65,37 @@ public class PasswordResetService {
 
         // Step 2: Check if account is active
         if (user.getStatus() != null && !user.getStatus()) {
-            log.warn("Password reset attempted for disabled account: {}", email);
+            log.warn("Password reset attempted for a disabled account");
             return; // Silent fail
         }
 
+        // Step 3: Generate token
+        String rawToken = ResetTokenUtil.randomToken();
+        String tokenHash = ResetTokenUtil.sha256(rawToken + pepper);
+
+        // Step 4: Invalidate every older unused token for this user
+        tokenRepository.deleteByUserIdAndUsedAtIsNull(user.getId());
+
+        // Step 5: Save token hash (not raw token). Persistence errors must roll back.
+        PasswordResetToken token = PasswordResetToken.builder()
+                .userId(user.getId())
+                .tokenHash(tokenHash)
+                .expiresAt(LocalDateTime.now().plusMinutes(expiryMinutes))
+                .requestIp(ip)
+                .userAgent(userAgent)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        tokenRepository.save(token);
+
+        // Step 6: Build reset URL
+        String resetUrl = frontendResetUrl + "?token=" + rawToken;
+
+        // Step 7: Email delivery errors remain non-enumerating, but DB errors are not hidden.
         try {
-            // Step 3: Generate token
-            String rawToken = ResetTokenUtil.randomToken();
-            String tokenHash = ResetTokenUtil.sha256(rawToken + pepper);
-
-            // Step 4: Clean up old unused tokens for this user
-            var oldToken = tokenRepository.findTopByUserIdOrderByCreatedAtDesc(user.getId());
-            if (oldToken.isPresent() && oldToken.get().getUsedAt() == null) {
-                tokenRepository.delete(oldToken.get());
-            }
-
-            // Step 5: Save token hash (not raw token)
-            PasswordResetToken token = PasswordResetToken.builder()
-                    .userId(user.getId())
-                    .tokenHash(tokenHash)
-                    .expiresAt(LocalDateTime.now().plusMinutes(expiryMinutes))
-                    .requestIp(ip)
-                    .userAgent(userAgent)
-                    .createdAt(LocalDateTime.now())
-                    .build();
-
-            tokenRepository.save(token);
-
-            // Step 6: Build reset URL
-            String resetUrl = frontendResetUrl + "?token=" + rawToken;
-
-            // Step 7: Send email
             emailService.sendResetLink(user.getEmail(), resetUrl);
-
-            log.info("Password reset token generated and email sent to: {}", email);
         } catch (Exception e) {
-            log.error("Error during password reset request", e);
-            // Still return success to client (don't reveal errors)
+            log.error("Password reset email delivery failed", e);
         }
     }
 
@@ -116,8 +116,8 @@ public class PasswordResetService {
             throw new ResponseStatusException(BAD_REQUEST, "New password is required");
         }
 
-        if (newPassword.length() < 6) {
-            throw new ResponseStatusException(BAD_REQUEST, "Password must be at least 6 characters");
+        if (newPassword.length() < 8 || newPassword.length() > 72) {
+            throw new ResponseStatusException(BAD_REQUEST, "Password must be between 8 and 72 characters");
         }
 
         // Step 1: Hash the token to find it in DB

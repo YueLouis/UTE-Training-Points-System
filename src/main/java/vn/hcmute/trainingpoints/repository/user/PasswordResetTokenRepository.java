@@ -1,5 +1,7 @@
 package vn.hcmute.trainingpoints.repository.user;
 
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import vn.hcmute.trainingpoints.entity.user.PasswordResetToken;
@@ -13,6 +15,7 @@ public interface PasswordResetTokenRepository extends JpaRepository<PasswordRese
     /**
      * Find valid (unused & not expired) token by hash
      */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<PasswordResetToken> findTopByTokenHashAndUsedAtIsNullAndExpiresAtAfter(
             String tokenHash,
             LocalDateTime now
@@ -22,5 +25,7 @@ public interface PasswordResetTokenRepository extends JpaRepository<PasswordRese
      * Find by user ID for cleanup
      */
     Optional<PasswordResetToken> findTopByUserIdOrderByCreatedAtDesc(Long userId);
+
+    long deleteByUserIdAndUsedAtIsNull(Long userId);
 }
 

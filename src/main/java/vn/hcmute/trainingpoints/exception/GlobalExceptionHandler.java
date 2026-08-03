@@ -1,9 +1,11 @@
 package vn.hcmute.trainingpoints.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -13,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     private Map<String, Object> body(HttpStatus status, String message, HttpServletRequest req) {
@@ -35,7 +38,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest req) {
         String msg = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
 
-        if (msg != null && msg.contains("uq_point_tx_student_semester_event")) {
+        if (msg != null && (msg.contains("uq_point_tx_student_semester_event")
+                || msg.contains("unique_student_semester_event"))) {
             HttpStatus st = HttpStatus.CONFLICT;
             return ResponseEntity.status(st).body(body(st, "Points already awarded for this event", req));
         }
@@ -61,9 +65,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(st).body(body(st, msg, req));
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<?> handleAccessDenied(AccessDeniedException ex, HttpServletRequest req) {
+        HttpStatus st = HttpStatus.FORBIDDEN;
+        return ResponseEntity.status(st).body(body(st, "Access denied", req));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGeneric(Exception ex, HttpServletRequest req) {
+        log.error("Unhandled exception while processing {}", req.getRequestURI(), ex);
         HttpStatus st = HttpStatus.INTERNAL_SERVER_ERROR;
-        return ResponseEntity.status(st).body(body(st, ex.getMessage(), req));
+        return ResponseEntity.status(st).body(body(st, "Unexpected server error", req));
     }
 }

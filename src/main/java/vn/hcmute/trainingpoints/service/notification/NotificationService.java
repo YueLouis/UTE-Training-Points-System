@@ -19,6 +19,12 @@ public class NotificationService {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
+    public boolean belongsToUser(Long notificationId, Long userId) {
+        return notificationRepository.findById(notificationId)
+                .map(notification -> notification.getUserId().equals(userId))
+                .orElse(false);
+    }
+
     @Transactional
     public void createNotification(Long userId, String title, String content, NotificationType type) {
         Notification notification = Notification.builder()

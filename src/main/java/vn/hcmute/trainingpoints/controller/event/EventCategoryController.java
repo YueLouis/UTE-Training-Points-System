@@ -10,7 +10,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/event-categories")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class EventCategoryController {
 
     private final EventCategoryService eventCategoryService;

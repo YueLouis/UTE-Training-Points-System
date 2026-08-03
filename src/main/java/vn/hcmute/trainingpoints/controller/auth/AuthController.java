@@ -1,6 +1,7 @@
 package vn.hcmute.trainingpoints.controller.auth;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,19 +12,18 @@ import vn.hcmute.trainingpoints.service.user.PasswordResetService;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin("*")
 public class AuthController {
 
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody LoginRequest req) {
+    public AuthResponse login(@Valid @RequestBody LoginRequest req) {
         return authService.login(req);
     }
 
     @PostMapping("/refresh")
-    public RefreshTokenResponse refresh(@RequestBody RefreshTokenRequest req) {
+    public RefreshTokenResponse refresh(@Valid @RequestBody RefreshTokenRequest req) {
         return authService.refreshToken(req.getRefreshToken());
     }
 
@@ -33,7 +33,7 @@ public class AuthController {
      */
     @PostMapping("/forgot-password")
     public ResponseEntity<SimpleMessageResponse> forgotPassword(
-            @RequestBody ForgotPasswordRequest req,
+            @Valid @RequestBody ForgotPasswordRequest req,
             HttpServletRequest http
     ) {
         String ip = http.getRemoteAddr();
@@ -50,7 +50,7 @@ public class AuthController {
      */
     @PostMapping("/reset-password")
     public ResponseEntity<SimpleMessageResponse> resetPassword(
-            @RequestBody ResetPasswordRequest req
+            @Valid @RequestBody ResetPasswordRequest req
     ) {
         passwordResetService.resetPassword(req.getToken(), req.getNewPassword());
 

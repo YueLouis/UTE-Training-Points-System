@@ -2,6 +2,7 @@ package vn.hcmute.trainingpoints.config.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +13,7 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret:UTE_Training_Points_System_Secret_Key_For_JWT_Token_Generation_And_Validation_2026}")
+    @Value("${jwt.secret}")
     private String secret;
 
     @Value("${jwt.access.expiration:1800000}")
@@ -20,6 +21,16 @@ public class JwtUtil {
 
     @Value("${jwt.refresh.expiration:604800000}")
     private long refreshExpiration; // 7 days
+
+    @PostConstruct
+    void validateConfiguration() {
+        if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < 32) {
+            throw new IllegalStateException("JWT_SECRET must contain at least 32 bytes");
+        }
+        if (accessExpiration <= 0 || refreshExpiration <= 0) {
+            throw new IllegalStateException("JWT expiration values must be positive");
+        }
+    }
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
